@@ -1,0 +1,37 @@
+
+    inlet
+    {
+        // Fix all three components of velocity on inflow and only the normal component on outflow,
+        // in order to be well-posed if there are some faces on the patch which are actually outflows.
+        //type                fixedNormalInletOutletVelocity;
+        //fixTangentialInflow yes;
+        //normalVelocity
+        //{
+        //    type            fixedValue;
+        //    value           uniform ( -10.0 0.0 0.0 );
+        //}
+        //value               uniform ( -10.0 0.0 0.0 );
+        type uniformFixedValue;
+        uniformValue table
+        (
+    ( 0 ( -9.397 0.0 -3.420)) // -20 degrees
+    ( 201 ( -9.397 0.0 -3.420)) // -20 degrees
+    ( 202 ( -9.659 0.0 -2.588)) // -15 degrees
+    ( 301 ( -9.659 0.0 -2.588)) // -15 degrees
+    ( 302 ( -9.848 0.0 -1.736)) // -10 degrees
+    ( 401 ( -9.848 0.0 -1.736)) // -10 degrees
+    ( 402 ( -9.962 0.0 -0.872)) // -5 degrees
+    ( 501 ( -9.962 0.0 -0.872)) // -5 degrees
+    ( 502 ( -10.000 0.0 0.000)) // 0 degrees
+    ( 601 ( -10.000 0.0 0.000)) // 0 degrees
+    ( 602 ( -9.962 0.0 0.872)) // 5 degrees
+    ( 701 ( -9.962 0.0 0.872)) // 5 degrees
+    ( 702 ( -9.848 0.0 1.736)) // 10 degrees
+    ( 801 ( -9.848 0.0 1.736)) // 10 degrees
+    ( 802 ( -9.659 0.0 2.588)) // 15 degrees
+    ( 901 ( -9.659 0.0 2.588)) // 15 degrees
+    ( 902 ( -9.397 0.0 3.420)) // 20 degrees
+    ( 1001 ( -9.397 0.0 3.420)) // 20 degrees
+        );
+    }
+
