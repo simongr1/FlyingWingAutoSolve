@@ -57,3 +57,15 @@ output.PointData.append(cD,'cD')
 
 ----
 
+
+
+
+Freecad:
+
+for importing csv on a spreadsheet do:
+App.ActiveDocument.Spreadsheet009.importFile("/tmp/test/case/mycsv.csv")
+
+for selecting a spreadsheet by name do
+    FreeCAD.ActiveDocument.getObjectsByLabel('Name')
+    FreeCAD.ActiveDocument.getObject('Internal Unique Name')
+
