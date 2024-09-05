@@ -71,7 +71,12 @@ mysheet2.set("A10","bla")
 mysheet2.get("A10")
 mysheet2.getCellFromAlias("AlphaLines")  // (yields string "A10")
 
-App.ActiveDocument.Spreadsheet012.cells["C6:D9"]
+App.ActiveDocument.Spreadsheet012.cells["C6:D9"]  (ReadOnly!!!)
+cells can only be set one at a time
+but a cell can hold objects
+sheet.set("A10","=list(1,2,3,4,5))   
+(better even: tuple)
+
 
 # need function to calculate string from coordinates and visa versa!!!
 
