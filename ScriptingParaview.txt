@@ -62,8 +62,21 @@ output.PointData.append(cD,'cD')
 
 Freecad:
 
-for importing csv on a spreadsheet do:
-App.ActiveDocument.Spreadsheet009.importFile("/tmp/test/case/mycsv.csv")
+for importing csv on a spreadsheet do:  (, is the delimiter for import)
+App.ActiveDocument.Spreadsheet009.importFile("/tmp/test/case/mycsv.csv",",")
+
+mysheet2=App.ActiveDocument.getObjectsByLabel("ResultDescription")[0]
+mysheet.Alpha2=3 (addresses cell with alias Alpha2)
+mysheet2.set("A10","bla")
+mysheet2.get("A10")
+mysheet2.getCellFromAlias("AlphaLines")  // (yields string "A10")
+
+App.ActiveDocument.Spreadsheet012.cells["C6:D9"]
+
+# need function to calculate string from coordinates and visa versa!!!
+
+https://github.com/realthunder/FreeCAD_assembly3/wiki/Expression-and-Spreadsheet#cell-and-range-reference <-- not implemented yet :(
+https://forum.freecad.org/viewtopic.php?t=42183 <-- this works
 
 for selecting a spreadsheet by name do
     FreeCAD.ActiveDocument.getObjectsByLabel('Name')
