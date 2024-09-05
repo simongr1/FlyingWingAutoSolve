@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /home/eprice/.local/share/FreeCAD/Macro/WingSolver_AnalyseResult.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+
+
+import numpy as np
+import scipy as sp
+
+
+desc=FreeCAD.ActiveDocument.getObjectsByLabel("ResultDescription")[0]
+raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
+res=FreeCAD.ActiveDocument.getObjectsByLabel("ResultData")[0]
+
+paramnames=desc.cells[desc.cells["ParameterNames"]]
+paramfields=desc.cells[desc.cells["Fields"]]
+paramapprox=desc.cells[desc.cells["Approx"]]
+paramref=desc.cells[desc.cells["Ref"]]
+params={}
+for i in range(len(paramnames)):
+	params[paramnames[i]]={"name":paramnames[i],"rank":paramapprox[i],"ref":paramref[i], "data":np.array(raw.cells[paramfields[i]])}
+
+for param in params.values():
+	if param["ref"] in paramnames:
+		param["refdata"]=params[param["ref"]]["data"]
+		fit=np.polyfit(param["refdata"],param["data"],param["rank"])
+		param["center"]=0
+		param["slope"]=1.0
+		if (param["rank"]==1): # its a line - get slope and zero point crossing
+			param["center"]=-fit[1]/fit[0]
+			param["slope"]=fit[0]
+		elif (param["rank"]==2): # this is for drag - get the point of minimum drag and how quickly it increases
+			param["center"]=-fit[1]/(2*fit[0])
+			param["slope"]=2*fit[0]
+		elif (param["rank"]==3): # this is for lift - a sine wave
+			roots=np.roots(fit)
+			reals=roots[np.isreal(roots)]
+			best=np.Infinity
+			for r in reals:
+				if np.abs(r)<np.abs(best):
+					best=r
+			param["center"]=best
+			param["slope"]=3.*fit[0]*best**2 + 2*fit[1]*best + fit[2] # derivative
+		res.set(param["name"]+"Center","%E"%param["center"])
+		res.set(param["name"]+"Slope","%E"%param["slope"])
+		res.set(param["name"]+"ZeroValue","%E"%fit[-1])
+
+FreeCAD.ActiveDocument.recompute()

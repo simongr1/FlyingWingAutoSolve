@@ -1,0 +1,166 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /home/eprice/.local/share/FreeCAD/Macro/WingSolver_CalcGradient.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+import FreeCADGui
+
+from os import path
+from CfdOF.Mesh import CfdMeshTools
+from CfdOF import CfdTools
+from CfdOF.Solve import CfdCaseWriterFoam
+import copy
+
+mydir = path.dirname(__file__)
+
+analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
+
+desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
+current=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
+analysis=FreeCAD.ActiveDocument.getObjectsByLabel("CfdAnalysis")[0]
+raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
+res=FreeCAD.ActiveDocument.getObjectsByLabel("ResultData")[0]
+sstate=FreeCAD.ActiveDocument.getObjectsByLabel("SolverState")[0]
+
+basedir=desc.cells["BaseDir"]
+workingdirbase=path.join(basedir,"workingdir")
+
+paramnames=desc.cells[desc.cells["ParameterNames"]]
+paramdefaults=desc.cells[desc.cells["DefaultValues"]]
+parammins=desc.cells[desc.cells["MinValue"]]
+parammaxs=desc.cells[desc.cells["MaxValue"]]
+paramsteps=desc.cells[desc.cells["SensibleStepWidth"]]
+
+params={}
+for i in range(len(paramnames)):
+	params[paramnames[i]]={"name":paramnames[i],"default":paramdefaults[i],"min":parammins[i],"max":parammins[i],"step":paramsteps[i], "current":current.cells[paramnames[i]]}
+
+gradienttests={0:params}
+for pn in params:
+	ps=copy.deepcopy(params)
+	ps[pn]["current"]=params[pn]["current"]+params[pn]["step"]
+	gradienttests[pn]=ps
+
+casepaths={}
+meshpaths={}
+#generate meshcases and cases
+
+for tn in gradienttests:
+	test=gradienttests[tn]
+	workingdir=path.join(workingdirbase,str(tn))
+	current.set("WorkingDir",workingdir)
+
+	for pn in test:
+		if (tn==pn):
+			print("Setting %s to %s"%(pn,"%E"%test[pn]["current"]))
+		current.set(pn,"%E"%test[pn]["current"])
+
+	current.recompute()
+	FreeCAD.ActiveDocument.recompute() # dimensions just changed all over the place - recompute needed
+
+	# generate mesh
+	cart_mesh = CfdMeshTools.CfdMeshTools(FreeCAD.ActiveDocument.Cylinder_Mesh)
+	FreeCAD.ActiveDocument.Cylinder_Mesh.Proxy.cart_mesh = cart_mesh
+	cart_mesh.writeMesh()
+	FreeCAD.ActiveDocument.recompute()
+
+	#generate case
+	FreeCAD.ActiveDocument.CfdSolver.Proxy.case_writer = CfdCaseWriterFoam.CfdCaseWriterFoam(analysis)
+	writer = FreeCAD.ActiveDocument.CfdSolver.Proxy.case_writer
+	writer.writeCase()
+	FreeCAD.ActiveDocument.recompute()
+	fullworkingdir=CfdTools.getOutputPath(analysis)
+	casepaths[tn]=path.join(fullworkingdir,"case")
+	meshpaths[tn]=path.join(fullworkingdir,"meshCase")
+
+# reset to old values	
+current.set("WorkingDir",workingdirbase)
+for pn in gradienttests[0]:
+	current.set(pn,"%E"%params[pn]["current"])
+
+current.recompute()
+FreeCAD.ActiveDocument.recompute()
+
+
+print("running mesher")
+#generate meshcases and cases
+command="echo \""
+for tn in gradienttests:
+	command+="cd "+meshpaths[tn]+"; ./Allmesh\n"
+
+command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c'
+#command+= '" | xargs -d "\\n" -n 1 -P 0 echo'
+print(command)
+print("parallel computation - waiting for completion, pease wait")
+FreeCADGui.updateGui( )
+ret=os.system(command)
+if (ret!=0):
+	print("failed - aborting")
+	raise Exception("parallel mesher call failed - please rerun on commandline and check for errors")
+
+print("meshing succeeded")
+
+print("running solvers")
+for tn in gradienttests:
+	command="cp "+path.join(basedir,"U")+" "+path.join(casepaths[tn],"0")+"; cp "+path.join(basedir,"pvScript.py")+" "+casepaths[tn]+"; cd "+casepaths[tn]+"; ./Allrun"
+	print("running solver:")
+	print(command)
+	FreeCADGui.updateGui()
+	ret=os.system(command)
+	if (ret!=0):
+		print("failed - aborting")
+		raise Exception("solver call failed - please rerun on commandline and check for errors")
+
+print("all solvers succeeded")
+
+print("doing analysis")
+command="echo \""
+for tn in gradienttests:
+	command+="cd "+casepaths[tn]+"; "+current.cells["pvBatchPath"]+" pvScript.py\n"
+
+command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c'
+#command+= '" | xargs -d "\\n" -n 1 -P 0 echo'
+print(command)
+print("parallel computation - waiting for completion, pease wait")
+FreeCADGui.updateGui( )
+ret=os.system(command)
+if (ret!=0):
+	print("failed - aborting")
+	raise Exception("parallel paraview call failed - please rerun on commandline and check for errors")
+print("analysis succeeded")
+
+print("calculating cost and gradients")
+
+costs={}
+gradients={}
+state={}
+params[0]={"current":0.0}
+for tn in gradienttests:
+	print("importing CSV for %s"%tn)
+	raw.importFile(path.join(casepaths[tn],"mycsv.csv"),",")
+	raw.recompute()
+	FreeCAD.ActiveDocument.recompute()
+	FreeCADGui.updateGui()
+	
+	CfdTools.executeMacro(analyseCSVMacro)	  #run the analysis macro - calculates cost
+	costs[tn]=res.cells["TotalCost"]
+	print("Total Cost: %f"%costs[tn])
+	print("saving detailed results")
+	#save parameters and results for debugging
+	res.exportFile(path.join(casepaths[tn],"result.csv"),",")
+	current.exportFile(path.join(casepaths[tn],"parameters.csv"),",")
+	gradients[tn]=costs[tn]-costs[0]
+	state[tn]=params[tn]["current"]
+
+print("State:"+str(state))
+print("Cost:"+str(costs))
+print("Gradient (normalized to stepsize:"+str(gradient))
+sstate.insertRows("1",1)
+sstate.recompute()
+sstate.set("A1","=tuple"+str(tuple(state.values())))
+sstate.set("B1","=tuple"+str(tuple(costs.values())))
+sstate.set("C1","=tuple"+str(tuple(gradients.values())))
+sstate.recompute()
+FreeCAD.ActiveDocument.recompute()
+FreeCADGui.updateGui()
+
+#

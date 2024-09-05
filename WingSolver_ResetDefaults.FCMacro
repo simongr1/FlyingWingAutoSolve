@@ -1,0 +1,41 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /home/eprice/.local/share/FreeCAD/Macro/WingSolver_CalcGradient.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+
+from os import path
+from CfdOF.Mesh import CfdMeshTools
+from CfdOF import CfdTools
+from CfdOF.Solve import CfdCaseWriterFoam
+import copy
+
+mydir = path.dirname(__file__)
+
+analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
+
+desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
+current=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
+analysis=FreeCAD.ActiveDocument.getObjectsByLabel("CfdAnalysis")[0]
+
+basedir=desc.cells["BaseDir"]
+workingdirbase=path.join(basedir,"workingdir")
+
+paramnames=desc.cells[desc.cells["ParameterNames"]]
+paramdefaults=desc.cells[desc.cells["DefaultValues"]]
+parammins=desc.cells[desc.cells["MinValue"]]
+parammaxs=desc.cells[desc.cells["MaxValue"]]
+paramsteps=desc.cells[desc.cells["SensibleStepWidth"]]
+
+params={}
+for i in range(len(paramnames)):
+	params[paramnames[i]]={"name":paramnames[i],"default":paramdefaults[i],"min":parammins[i],"max":parammins[i],"step":paramsteps[i], "current":current.cells[paramnames[i]]}
+
+# reset to old values	
+current.set("WorkingDir",workingdirbase)
+for pn in params:
+	print("Setting %s to %s"%(pn,"%E"%params[pn]["default"]))
+	current.set(pn,"%E"%params[pn]["default"])
+
+current.recompute()
+App.ActiveDocument.recompute()
+
