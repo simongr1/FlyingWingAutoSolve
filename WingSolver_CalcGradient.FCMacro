@@ -36,7 +36,7 @@ paramsteps=desc.cells[desc.cells["SensibleStepWidth"]]
 
 params={}
 for i in range(len(paramnames)):
-	params[paramnames[i]]={"name":paramnames[i],"default":paramdefaults[i],"min":parammins[i],"max":parammins[i],"step":paramsteps[i], "current":current.cells[paramnames[i]]}
+	params[paramnames[i]]={"name":paramnames[i],"default":paramdefaults[i],"min":parammins[i],"max":parammaxs[i],"step":paramsteps[i], "current":current.cells[paramnames[i]]}
 
 rparamnames=rdesc.cells[rdesc.cells["ParameterNames"]]
 rparamref=rdesc.cells[rdesc.cells["Ref"]]
@@ -185,11 +185,7 @@ for tn in gradienttests:
 	costcorelation2=[]
 	cost2corelation2=[]
 	for pn in rparams:
-		print("debug",pn)
 		for suffix in ("Absolute","Slope","Center"):
-			print("debug-debug",pn)
-			print(pn+suffix+"Deviation")
-			print(res.cells[pn+suffix+"Deviation"])
 			deviationcorelation2.append(res.cells[pn+suffix+"Deviation"])
 			costcorelation2.append(res.cells[pn+suffix+"Cost"])
 			cost2corelation2.append(res.cells[pn+suffix+"Deviation"])
@@ -212,5 +208,5 @@ sstate.set("F1","=tuple("+'; '.join((i for i in cost2corelation.values()))+")")
 sstate.recompute()
 FreeCAD.ActiveDocument.recompute()
 FreeCADGui.updateGui()
-
+FreeCAD.ActiveDocument.save()
 #
