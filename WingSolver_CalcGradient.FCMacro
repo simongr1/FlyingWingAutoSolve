@@ -12,6 +12,8 @@ import copy
 
 mydir = path.dirname(__file__)
 
+failcount=0
+
 analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
 
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
@@ -55,6 +57,9 @@ for tn in gradienttests:
 		current.set(pn,"%E"%test[pn]["current"])
 
 	current.recompute()
+	for obj in FreeCAD.ActiveDocument.Objects:
+		obj.touch()
+
 	FreeCAD.ActiveDocument.recompute() # dimensions just changed all over the place - recompute needed
 
 	# generate mesh
@@ -78,6 +83,9 @@ for pn in gradienttests[0]:
 	current.set(pn,"%E"%params[pn]["current"])
 
 current.recompute()
+for obj in FreeCAD.ActiveDocument.Objects:
+	obj.touch()
+
 FreeCAD.ActiveDocument.recompute()
 
 
@@ -105,8 +113,14 @@ for tn in gradienttests:
 	print("running solver:")
 	print(command)
 	FreeCADGui.updateGui()
-	ret=os.system(command)
-	if (ret!=0):
+	while failcount<3:
+		ret=os.system(command)
+		if ret==0:
+			failcount=0
+			break
+		failcount+=1
+		print("solver failed %i times - retrying"%failcount)
+	if (failcount>0):
 		print("failed - aborting")
 		raise Exception("solver call failed - please rerun on commandline and check for errors")
 
@@ -121,7 +135,7 @@ command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c'
 #command+= '" | xargs -d "\\n" -n 1 -P 0 echo'
 print(command)
 print("parallel computation - waiting for completion, pease wait")
-FreeCADGui.updateGui( )
+FreeCADGui.updateGui()
 ret=os.system(command)
 if (ret!=0):
 	print("failed - aborting")
