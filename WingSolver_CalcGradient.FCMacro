@@ -110,7 +110,10 @@ command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c'
 #command+= '" | xargs -d "\\n" -n 1 -P 0 echo'
 print(command)
 print("parallel computation - waiting for completion, pease wait")
-FreeCADGui.updateGui( )
+try:
+	FreeCADGui.updateGui( )
+except:
+	pass
 ret=os.system(command)
 if (ret!=0):
 	print("failed - aborting")
@@ -124,7 +127,10 @@ for tn in gradienttests:
 	command="cp "+path.join(basedir,"U")+" "+path.join(casepaths[tn],"0")+"; cp "+path.join(basedir,"pvScript.py")+" "+casepaths[tn]+"; cd "+casepaths[tn]+"; ./Allrun"
 	print("running solver:")
 	print(command)
-	FreeCADGui.updateGui()
+	try:
+		FreeCADGui.updateGui( )
+	except:
+		pass
 	while failcount<3:
 		ret=os.system(command)
 		if ret==0:
@@ -148,7 +154,10 @@ command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c'
 #command+= '" | xargs -d "\\n" -n 1 -P 0 echo'
 print(command)
 print("parallel computation - waiting for completion, pease wait")
-FreeCADGui.updateGui()
+try:
+	FreeCADGui.updateGui( )
+except:
+	pass
 ret=os.system(command)
 if (ret!=0):
 	print("failed - aborting")
@@ -170,7 +179,10 @@ for tn in gradienttests:
 	raw.importFile(path.join(casepaths[tn],"mycsv.csv"),",")
 	raw.recompute()
 	FreeCAD.ActiveDocument.recompute()
-	FreeCADGui.updateGui()
+	try:
+		FreeCADGui.updateGui( )
+	except:
+		pass
 	
 	CfdTools.executeMacro(analyseCSVMacro)	  #run the analysis macro - calculates cost
 	costs[tn]=res.cells["TotalCost"]
@@ -207,6 +219,9 @@ sstate.set("F1","=tuple("+'; '.join((i for i in cost2corelation.values()))+")")
 
 sstate.recompute()
 FreeCAD.ActiveDocument.recompute()
-FreeCADGui.updateGui()
+try:
+	FreeCADGui.updateGui( )
+except:
+	pass
 FreeCAD.ActiveDocument.save()
 #
