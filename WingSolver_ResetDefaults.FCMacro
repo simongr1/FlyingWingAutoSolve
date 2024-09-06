@@ -37,5 +37,8 @@ for pn in params:
 	current.set(pn,"%E"%params[pn]["default"])
 
 current.recompute()
-App.ActiveDocument.recompute()
+for obj in FreeCAD.ActiveDocument.Objects:
+    obj.touch()
+FreeCAD.ActiveDocument.recompute()
 
+print("Reset Defaults: done.")
