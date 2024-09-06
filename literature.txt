@@ -12,6 +12,8 @@ very simplified model for simplified wing - case study (but 2013)
 https://link.springer.com/article/10.1007/s00158-023-03559-z
 estimates uncertainty as well
 
+https://link.springer.com/article/10.1007/s00158-018-1912-8
+an older open source NASA tool for teaching - python+fortran
 
 
 
