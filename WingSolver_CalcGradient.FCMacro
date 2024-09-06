@@ -17,6 +17,7 @@ failcount=0
 analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
 
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
+rdesc=FreeCAD.ActiveDocument.getObjectsByLabel("ResultDescription")[0]
 current=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
 analysis=FreeCAD.ActiveDocument.getObjectsByLabel("CfdAnalysis")[0]
 raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
@@ -32,9 +33,17 @@ parammins=desc.cells[desc.cells["MinValue"]]
 parammaxs=desc.cells[desc.cells["MaxValue"]]
 paramsteps=desc.cells[desc.cells["SensibleStepWidth"]]
 
+
 params={}
 for i in range(len(paramnames)):
 	params[paramnames[i]]={"name":paramnames[i],"default":paramdefaults[i],"min":parammins[i],"max":parammins[i],"step":paramsteps[i], "current":current.cells[paramnames[i]]}
+
+rparamnames=rdesc.cells[rdesc.cells["ParameterNames"]]
+rparamref=rdesc.cells[rdesc.cells["Ref"]]
+rparams={}
+for i in range(len(rparamnames)):
+	if rparamref[i] in rparamnames:
+		rparams[rparamnames[i]]={"name":rparamnames[i],"ref":rparamref[i]}
 
 gradienttests={0:params}
 for pn in params:
@@ -47,6 +56,7 @@ meshpaths={}
 #generate meshcases and cases
 
 for tn in gradienttests:
+	#break
 	test=gradienttests[tn]
 	workingdir=path.join(workingdirbase,str(tn))
 	current.set("WorkingDir",workingdir)
@@ -93,6 +103,7 @@ print("running mesher")
 #generate meshcases and cases
 command="echo \""
 for tn in gradienttests:
+	#break
 	command+="cd "+meshpaths[tn]+"; ./Allmesh\n"
 
 command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c'
@@ -109,6 +120,7 @@ print("meshing succeeded")
 
 print("running solvers")
 for tn in gradienttests:
+	#break
 	command="cp "+path.join(basedir,"U")+" "+path.join(casepaths[tn],"0")+"; cp "+path.join(basedir,"pvScript.py")+" "+casepaths[tn]+"; cd "+casepaths[tn]+"; ./Allrun"
 	print("running solver:")
 	print(command)
@@ -129,6 +141,7 @@ print("all solvers succeeded")
 print("doing analysis")
 command="echo \""
 for tn in gradienttests:
+	#break
 	command+="cd "+casepaths[tn]+"; "+current.cells["pvBatchPath"]+" pvScript.py\n"
 
 command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c'
@@ -147,6 +160,10 @@ print("calculating cost and gradients")
 costs={}
 gradients={}
 state={}
+deviationcorelation={}
+costcorelation={}
+cost2corelation={}
+
 params[0]={"current":0.0}
 for tn in gradienttests:
 	print("importing CSV for %s"%tn)
@@ -164,6 +181,21 @@ for tn in gradienttests:
 	current.exportFile(path.join(casepaths[tn],"parameters.csv"),",")
 	gradients[tn]=costs[tn]-costs[0]
 	state[tn]=params[tn]["current"]
+	deviationcorelation2=[]
+	costcorelation2=[]
+	cost2corelation2=[]
+	for pn in rparams:
+		print("debug",pn)
+		for suffix in ("Absolute","Slope","Center"):
+			print("debug-debug",pn)
+			print(pn+suffix+"Deviation")
+			print(res.cells[pn+suffix+"Deviation"])
+			deviationcorelation2.append(res.cells[pn+suffix+"Deviation"])
+			costcorelation2.append(res.cells[pn+suffix+"Cost"])
+			cost2corelation2.append(res.cells[pn+suffix+"Deviation"])
+	deviationcorelation[tn]="tuple"+str(tuple(deviationcorelation2))
+	costcorelation[tn]="tuple"+str(tuple(costcorelation2))
+	cost2corelation[tn]="tuple"+str(tuple(cost2corelation2))
 
 print("State:"+str(state))
 print("Cost:"+str(costs))
@@ -173,6 +205,10 @@ sstate.recompute()
 sstate.set("A1","=tuple"+str(tuple(state.values())))
 sstate.set("B1","=tuple"+str(tuple(costs.values())))
 sstate.set("C1","=tuple"+str(tuple(gradients.values())))
+sstate.set("D1","=tuple("+'; '.join((i for i in deviationcorelation.values()))+")")
+sstate.set("E1","=tuple("+'; '.join((i for i in costcorelation.values()))+")")
+sstate.set("F1","=tuple("+'; '.join((i for i in cost2corelation.values()))+")")
+
 sstate.recompute()
 FreeCAD.ActiveDocument.recompute()
 FreeCADGui.updateGui()
