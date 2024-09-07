@@ -223,10 +223,24 @@ try:
 	FreeCADGui.updateGui( )
 except:
 	pass
+	
+print("setting CSV back to main result")
+raw.importFile(path.join(casepaths[0],"mycsv.csv"),",")
+raw.recompute()
+FreeCAD.ActiveDocument.recompute()
+try:
+    FreeCADGui.updateGui( )
+except:
+    pass
+CfdTools.executeMacro(analyseCSVMacro)	  #run the analysis macro - calculates cost
+
+print("saving main documents")
 FreeCAD.ActiveDocument.save()
+
+print("closing main window")
 try:
 	FreeCADGui.getMainWindow().close()
 except:
 	pass
 #
-print("done successful")
+print("done")
