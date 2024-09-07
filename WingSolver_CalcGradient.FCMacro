@@ -224,4 +224,8 @@ try:
 except:
 	pass
 FreeCAD.ActiveDocument.save()
+try:
+	Gui.MainWindow().close()
+except:
+	pass
 #
