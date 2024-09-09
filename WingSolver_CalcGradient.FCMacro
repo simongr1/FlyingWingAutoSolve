@@ -55,12 +55,8 @@ casepaths={}
 meshpaths={}
 #generate meshcases and cases
 
-for tn in gradienttests:
-	#break
+def _set_params(tn):
 	test=gradienttests[tn]
-	workingdir=path.join(workingdirbase,str(tn))
-	current.set("WorkingDir",workingdir)
-
 	for pn in test:
 		if (tn==pn):
 			print("Setting %s to %s"%(pn,"%E"%test[pn]["current"]))
@@ -71,6 +67,14 @@ for tn in gradienttests:
 		obj.touch()
 
 	FreeCAD.ActiveDocument.recompute() # dimensions just changed all over the place - recompute needed
+
+def _export_mesh(tn):
+	global casepaths,meshpaths
+
+	workingdir=path.join(workingdirbase,str(tn))
+	current.set("WorkingDir",workingdir)
+
+	_set_params(tn)
 
 	# generate mesh
 	cart_mesh = CfdMeshTools.CfdMeshTools(FreeCAD.ActiveDocument.Cylinder_Mesh)
@@ -87,17 +91,15 @@ for tn in gradienttests:
 	casepaths[tn]=path.join(fullworkingdir,"case")
 	meshpaths[tn]=path.join(fullworkingdir,"meshCase")
 
+def _reset_base():
+	current.set("WorkingDir",workingdirbase)
+	_set_params(0)
+
+for tn in gradienttests:
+	_export_mesh(tn)
+
 # reset to old values	
-current.set("WorkingDir",workingdirbase)
-for pn in gradienttests[0]:
-	current.set(pn,"%E"%params[pn]["current"])
-
-current.recompute()
-for obj in FreeCAD.ActiveDocument.Objects:
-	obj.touch()
-
-FreeCAD.ActiveDocument.recompute()
-
+_reset_base()
 
 print("running mesher")
 #generate meshcases and cases
@@ -131,14 +133,16 @@ for tn in gradienttests:
 		FreeCADGui.updateGui( )
 	except:
 		pass
-	while failcount<3:
+	while failcount<5:
 		ret=os.system(command)
 		if ret==0:
 			failcount=0
 			break
 		failcount+=1
 		print("solver failed %i times - retrying"%failcount)
-		print("rerunning mesher for this case:")
+		_export_mesh(tn)
+		_reset_base()
+		print("rerunning mesher for %s"%tn)
 		subcommand="cd "+meshpaths[tn]+"; ./Allmesh"
 		ret=os.system(subcommand)
 		if ret!=0:
