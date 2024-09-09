@@ -138,6 +138,12 @@ for tn in gradienttests:
 			break
 		failcount+=1
 		print("solver failed %i times - retrying"%failcount)
+		print("rerunning mesher for this case:")
+		subcommand="cd "+meshpaths[tn]+"; ./Allmesh"
+		ret=os.system(subcommand)
+		if ret!=0:
+			print("mesher rerun for %s failed - aborting"%tn)
+			raise Exception("mesher rerun failed - aborting")
 	if (failcount>0):
 		print("failed - aborting")
 		raise Exception("solver call failed - please rerun on commandline and check for errors")
