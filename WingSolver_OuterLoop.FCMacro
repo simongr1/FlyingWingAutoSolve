@@ -71,5 +71,4 @@ while keepgoing:
 
 	print("Plotting Result:")
 	CfdTools.executeMacro(plotResultMacro)
-	break
 print("done")
