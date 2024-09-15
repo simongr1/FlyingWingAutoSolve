@@ -116,8 +116,9 @@ try:
 	FreeCADGui.updateGui( )
 except:
 	pass
-ret=os.system(command)
-if (ret!=0):
+try:
+	CfdTools.runFoamCommand(command)
+except:
 	print("failed - aborting")
 	raise Exception("parallel mesher call failed - please rerun on commandline and check for errors")
 
@@ -134,20 +135,23 @@ for tn in gradienttests:
 	except:
 		pass
 	while failcount<5:
-		ret=os.system(command)
-		if ret==0:
+		try:
+			CfdTools.runFoamCommand(command)
 			failcount=0
 			break
-		failcount+=1
-		print("solver failed %i times - retrying"%failcount)
-		_export_mesh(tn)
-		_reset_base()
-		print("rerunning mesher for %s"%tn)
-		subcommand="cd "+meshpaths[tn]+"; ./Allmesh"
-		ret=os.system(subcommand)
-		if ret!=0:
-			print("mesher rerun for %s failed - aborting"%tn)
-			raise Exception("mesher rerun failed - aborting")
+		except:
+			failcount+=1
+			print("solver failed %i times - retrying"%failcount)
+			_export_mesh(tn)
+			_reset_base()
+			print("rerunning mesher for %s"%tn)
+			subcommand="cd "+meshpaths[tn]+"; ./Allmesh"
+			try:
+				CfdTools.runFoamCommand(subcommand)
+			except:
+				print("mesher rerun for %s failed - aborting"%tn)
+				raise Exception("mesher rerun failed - aborting")
+			pass
 	if (failcount>0):
 		print("failed - aborting")
 		raise Exception("solver call failed - please rerun on commandline and check for errors")
@@ -168,8 +172,9 @@ try:
 	FreeCADGui.updateGui( )
 except:
 	pass
-ret=os.system(command)
-if (ret!=0):
+try:
+	CfdTools.runFoamCommand(command)
+except:
 	print("failed - aborting")
 	raise Exception("parallel paraview call failed - please rerun on commandline and check for errors")
 print("analysis succeeded")
@@ -247,10 +252,10 @@ CfdTools.executeMacro(analyseCSVMacro)	  #run the analysis macro - calculates co
 print("saving main documents")
 FreeCAD.ActiveDocument.save()
 
-print("closing main window")
-try:
-	FreeCADGui.getMainWindow().close()
-except:
-	pass
+#print("closing main window")
+#try:
+#	FreeCADGui.getMainWindow().close()
+#except:
+#	pass
 #
 print("done")
