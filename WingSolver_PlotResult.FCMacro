@@ -20,8 +20,20 @@ params={}
 for i in range(len(paramnames)):
 	params[paramnames[i]]={"name":paramnames[i],"rank":paramapprox[i],"ref":paramref[i], "data":np.array(raw.cells[paramfields[i]])}
 
+mp=FreeCAD.Plot.Plot.figure("Results")
+ax=mp.axes
+ax.cla()
+ax.set_xlabel("Angle of Attack")
+ax.grid()
+ax.set_title("Aerodynamic Evaluation")
+
+
+
+xdata=[x for x in range(-20,21)]
 for param in params.values():
 	if param["ref"] in paramnames:
+		
+		ax.plot(params[param["ref"]]["data"],param["data"],label=param["name"])
 		param["refdata"]=params[param["ref"]]["data"]
 		fit=np.polyfit(param["refdata"],param["data"],param["rank"])
 		param["center"]=0
@@ -29,9 +41,11 @@ for param in params.values():
 		if (param["rank"]==1): # its a line - get slope and zero point crossing
 			param["center"]=-fit[1]/fit[0]
 			param["slope"]=fit[0]
+			ydata=[fit[0]*x+fit[1] for x in xdata]
 		elif (param["rank"]==2): # this is for drag - get the point of minimum drag and how quickly it increases
 			param["center"]=-fit[1]/(2*fit[0])
 			param["slope"]=2*fit[0]
+			ydata=[fit[0]*x**2+fit[1]*x + fit[2] for x in xdata]
 		elif (param["rank"]==3): # this is for lift - a sine wave
 			roots=np.roots(fit)
 			reals=roots[np.isreal(roots)]
@@ -41,9 +55,10 @@ for param in params.values():
 					best=r
 			param["center"]=best
 			param["slope"]=3.*fit[0]*best**2 + 2*fit[1]*best + fit[2] # derivative
-		res.set(param["name"]+"Parameters","=tuple"+str(tuple(fit)))
-		res.set(param["name"]+"Center","%E"%param["center"])
-		res.set(param["name"]+"Slope","%E"%param["slope"])
-		res.set(param["name"]+"ZeroValue","%E"%fit[-1])
+			ydata=[fit[0]*x**3+fit[1]*x**2 + fit[2]*x +fit[3]  for x in xdata]
+		ax.plot(xdata,ydata,label=param["name"]+" Fit")
 
-FreeCAD.ActiveDocument.recompute()
+ax.legend(loc="best")
+mp.canvas.draw()
+
+
