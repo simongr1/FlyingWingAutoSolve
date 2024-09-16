@@ -30,6 +30,9 @@ paramnames=desc.cells[desc.cells["ParameterNames"]]
 
 maxiterations=scontrol.cells["MaxIterations"]
 finalcost=scontrol.cells["FinalCost"]
+initialLR=scontrol.cells["InitialLearningRate"]
+lrAlpha=scontrol.cells["LearningRateAlpha"]
+
 
 keepgoing=True
 while keepgoing:
@@ -48,7 +51,11 @@ while keepgoing:
 			print("Final cost reached")
 			keepgoing=False
 			break
-	print("Preparing next step:")
+
+	newLR=initialLR*(lrAplha**(iterations-1)
+	desc.set("LearningRate"),newLR)
+
+	print("Preparing next step, learning rate %f"%newLR)
 	CfdTools.executeMacro(prepareNextStepMacro)
 
 	print("Calculating Gradients:")

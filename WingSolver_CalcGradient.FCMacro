@@ -33,6 +33,7 @@ parammins=desc.cells[desc.cells["MinValue"]]
 parammaxs=desc.cells[desc.cells["MaxValue"]]
 paramsteps=desc.cells[desc.cells["SensibleStepWidth"]]
 
+lr=desc.cells["LearningRate"]
 
 params={}
 for i in range(len(paramnames)):
@@ -48,7 +49,7 @@ for i in range(len(rparamnames)):
 gradienttests={0:params}
 for pn in params:
 	ps=copy.deepcopy(params)
-	ps[pn]["current"]=params[pn]["current"]+params[pn]["step"]
+	ps[pn]["current"]=params[pn]["current"]+(params[pn]["step"]*lr)
 	gradienttests[pn]=ps
 
 casepaths={}
