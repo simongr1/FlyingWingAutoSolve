@@ -52,8 +52,8 @@ while keepgoing:
 			keepgoing=False
 			break
 
-	newLR=initialLR*(lrAplha**(iterations-1))
-	desc.set("LearningRate"),newLR)
+	newLR=initialLR*(lrAlpha**(iterations-1))
+	desc.set("LearningRate","%.8f"%newLR)
 
 	print("Preparing next step, learning rate %f"%newLR)
 	CfdTools.executeMacro(prepareNextStepMacro)
