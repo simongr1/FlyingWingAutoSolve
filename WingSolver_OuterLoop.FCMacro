@@ -35,16 +35,15 @@ keepgoing=True
 while keepgoing:
 	iterations=int(re.findall('\d+',sstate.getUsedRange()[1])[0])
 	try:
-		cost=sstate.cells["B1"][0]
+		cost=float(sstate.cells["B1"][0])
 	except:
-		cost=None
-
+		cost=-1.0
 	print("Solver outer loop, current iteration %d, max iterations %d, current cost %f, final cost %f"%(iterations,maxiterations,cost,finalcost))
 	if iterations>maxiterations:
 		print("Max iterations reached")
 		keepgoing=False
 		break
-	if cost is not None:
+	if cost!=-1.0:
 		if cost<finalcost:
 			print("Final cost reached")
 			keepgoing=False
