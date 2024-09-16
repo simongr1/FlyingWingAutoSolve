@@ -110,7 +110,7 @@ for tn in gradienttests:
 	#break
 	command+="cd "+meshpaths[tn]+"; ./Allmesh\n"
 
-command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c'
+command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c >/dev/null'
 #command+= '" | xargs -d "\\n" -n 1 -P 0 echo'
 print(command)
 print("parallel computation - waiting for completion, pease wait")
@@ -129,7 +129,7 @@ print("meshing succeeded")
 print("running solvers")
 for tn in gradienttests:
 	#break
-	command="cp "+path.join(basedir,"U")+" "+path.join(casepaths[tn],"0")+"; cp "+path.join(basedir,"pvScript.py")+" "+casepaths[tn]+"; cd "+casepaths[tn]+"; ./Allrun"
+	command="cp "+path.join(basedir,"U")+" "+path.join(casepaths[tn],"0")+"; cp "+path.join(basedir,"pvScript.py")+" "+casepaths[tn]+"; cd "+casepaths[tn]+"; ./Allrun >/dev/null"
 	print("running solver:")
 	print(command)
 	try:
