@@ -13,6 +13,7 @@ import copy
 mydir = path.dirname(__file__)
 
 failcount=0
+meshsize=0
 
 analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
 
@@ -26,6 +27,8 @@ sstate=FreeCAD.ActiveDocument.getObjectsByLabel("SolverState")[0]
 
 basedir=desc.cells["BaseDir"]
 workingdirbase=path.join(basedir,"workingdir")
+
+meshsizes=desc.cells["MeshSizes"]
 
 paramnames=desc.cells[desc.cells["ParameterNames"]]
 paramdefaults=desc.cells[desc.cells["DefaultValues"]]
@@ -71,7 +74,7 @@ def _set_params(tn):
 	FreeCAD.ActiveDocument.recompute() # dimensions just changed all over the place - recompute needed
 
 def _export_mesh(tn):
-	global casepaths,meshpaths,basepaths
+	global casepaths,meshpaths,basepaths,meshsizes,meshsize
 
 	workingdir=path.join(workingdirbase,str(tn))
 	current.set("WorkingDir",workingdir)
@@ -80,7 +83,10 @@ def _export_mesh(tn):
 	_set_params(tn)
 
 	# generate mesh
-	cart_mesh = CfdMeshTools.CfdMeshTools(FreeCAD.ActiveDocument.Cylinder_Mesh)
+	meshobject=FreeCAD.ActiveDocument.Cylinder_Mesh
+	meshobject.CharacteristicLengthMax=meshsizes[meshsize]
+	FreeCAD.ActiveDocument.recompute()
+	cart_mesh = CfdMeshTools.CfdMeshTools(meshobject)
 	FreeCAD.ActiveDocument.Cylinder_Mesh.Proxy.cart_mesh = cart_mesh
 	cart_mesh.writeMesh()
 	FreeCAD.ActiveDocument.recompute()
@@ -98,34 +104,43 @@ def _reset_base():
 	current.set("WorkingDir",workingdirbase)
 	_set_params(0)
 
-for tn in gradienttests:
-	_export_mesh(tn)
+while failcount>=0:
+	for tn in gradienttests:
+		_export_mesh(tn)
 
-# reset to old values	
-_reset_base()
+	# reset to old values	
+	_reset_base()
 
-print("running mesher")
-#generate meshcases and cases
-command="echo \""
-for tn in gradienttests:
-	#break
-	command+="cd "+meshpaths[tn]+"; ./Allmesh\n"
+	print("running mesher")
+	#generate meshcases and cases
+	command="echo \""
+	for tn in gradienttests:
+		#break
+		command+="cd "+meshpaths[tn]+"; ./Allmesh\n"
 
-command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c >/dev/null'
-#command+= '" | xargs -d "\\n" -n 1 -P 0 echo'
-print(command)
-print("parallel computation - waiting for completion, pease wait")
-try:
-	FreeCADGui.updateGui( )
-except:
-	pass
-try:
-	CfdTools.runFoamCommand(command)
-except:
-	print("failed - aborting")
-	raise Exception("parallel mesher call failed - please rerun on commandline and check for errors")
+	command+= '" | xargs -d "\\n" -n 1 -P 0 bash -c >/dev/null'
+	#command+= '" | xargs -d "\\n" -n 1 -P 0 echo'
+	print(command)
+	print("parallel computation - waiting for completion, pease wait")
+	try:
+		FreeCADGui.updateGui( )
+	except:
+		pass
+	try:
+		CfdTools.runFoamCommand(command)
+		failcount=-1
+	except:
+		print("mesher failed")
+		failcount+=1
+		if failcount<len(meshsizes):
+			meshsize=failcount
+			print("setting meshmaxsize to %i"%meshsizes[meshsize])
+		else:
+			raise Exception("parallel mesher call failed for all meshsizes - please rerun on commandline and check for errors")
 
 print("meshing succeeded")
+# note meshsize is NOT reset to ensure all gradient tests during iteration run with the same meshsize
+failcount=0
 
 print("running solvers")
 for tn in gradienttests:
@@ -235,6 +250,7 @@ sstate.set("C1","=tuple"+str(tuple(gradients.values())))
 sstate.set("D1","=tuple("+'; '.join((i for i in deviationcorelation.values()))+")")
 sstate.set("E1","=tuple("+'; '.join((i for i in costcorelation.values()))+")")
 sstate.set("F1","=tuple("+'; '.join((i for i in cost2corelation.values()))+")")
+sstate.set("G1",str(meshsizes[meshsize]))
 
 sstate.recompute()
 FreeCAD.ActiveDocument.recompute()
