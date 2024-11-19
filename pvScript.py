@@ -2,7 +2,7 @@
 from paraview.simple import *
 
 
-LoadState("/home/eprice/src/FlyingWing/CSVonly.pvsm",".")
+LoadState("../../../../CSVonly.pvsm",".")
 
 Render()
 ResetCamera()
