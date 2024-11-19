@@ -35,13 +35,14 @@ for param in params.values():
 		elif (param["rank"]==3): # this is for lift - a sine wave
 			roots=np.roots(fit)
 			reals=roots[np.isreal(roots)]
-			best=np.Infinity
+			best=np.inf
 			for r in reals:
 				if np.abs(r)<np.abs(best):
 					best=r
 			param["center"]=best
 			param["slope"]=3.*fit[0]*best**2 + 2*fit[1]*best + fit[2] # derivative
-		res.set(param["name"]+"Parameters","=tuple"+str(tuple(fit)))
+		res.set(param["name"]+"Parameters","=tuple"+str(tuple([ float(x) for x in fit ])))
+		#res.set(param["name"]+"Parameters","=tuple"+str(tuple(fit)))
 		res.set(param["name"]+"Center","%E"%param["center"])
 		res.set(param["name"]+"Slope","%E"%param["slope"])
 		res.set(param["name"]+"ZeroValue","%E"%fit[-1])
