@@ -35,7 +35,8 @@ for i in range(len(paramnames)):
 
 	print("Update for %s: %E + %E"%(paramnames[i],params[paramnames[i]]["current"],params[paramnames[i]]["step"]))
 	params[paramnames[i]]["current"]+=params[paramnames[i]]["step"]
-
+	
+	#check if parameter is below/above min/max
 	if params[paramnames[i]]["current"]<params[paramnames[i]]["min"]:
 		params[paramnames[i]]["current"]=params[paramnames[i]]["min"]
 		print("limiting %s to lower limit"%paramnames[i])

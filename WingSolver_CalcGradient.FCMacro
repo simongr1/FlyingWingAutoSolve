@@ -17,6 +17,7 @@ meshsize=0
 
 analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
 
+#load spreadsheets
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
 rdesc=FreeCAD.ActiveDocument.getObjectsByLabel("ResultDescription")[0]
 current=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
@@ -25,23 +26,29 @@ raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
 res=FreeCAD.ActiveDocument.getObjectsByLabel("ResultData")[0]
 sstate=FreeCAD.ActiveDocument.getObjectsByLabel("SolverState")[0]
 
+#get workingdir
 basedir=desc.cells["BaseDir"]
 workingdirbase=path.join(basedir,"workingdir")
 
 meshsizes=desc.cells["MeshSizes"]
 
+#get parameter data
 paramnames=desc.cells[desc.cells["ParameterNames"]]
 paramdefaults=desc.cells[desc.cells["DefaultValues"]]
 parammins=desc.cells[desc.cells["MinValue"]]
 parammaxs=desc.cells[desc.cells["MaxValue"]]
 paramsteps=desc.cells[desc.cells["SensibleStepWidth"]]
 
+#get learning rate
 lr=desc.cells["LearningRate"]
 
 params={}
+
+#Create Dictionary with important data of each parameter
 for i in range(len(paramnames)):
 	params[paramnames[i]]={"name":paramnames[i],"default":paramdefaults[i],"min":parammins[i],"max":parammaxs[i],"step":paramsteps[i], "current":current.cells[paramnames[i]]}
 
+#Create dictionary of result data (with name and reference variable/parameter)
 rparamnames=rdesc.cells[rdesc.cells["ParameterNames"]]
 rparamref=rdesc.cells[rdesc.cells["Ref"]]
 rparams={}
@@ -49,6 +56,8 @@ for i in range(len(rparamnames)):
 	if rparamref[i] in rparamnames:
 		rparams[rparamnames[i]]={"name":rparamnames[i],"ref":rparamref[i]}
 
+#create dict for gardienttest:
+#0: Initial position. For each parameter (e.g. aspect ratio) the current value is changed according to the sensible step size)
 gradienttests={0:params}
 for pn in params:
 	ps=copy.deepcopy(params)
@@ -61,6 +70,8 @@ meshpaths={}
 #generate meshcases and cases
 
 def _set_params(tn):
+	#sets the current paramters of the model (Wing Geometry) to one(tn) of the test cases
+	#Input: name of the testcase tn
 	test=gradienttests[tn]
 	for pn in test:
 		if (tn==pn):
@@ -75,11 +86,13 @@ def _set_params(tn):
 
 def _export_mesh(tn):
 	global casepaths,meshpaths,basepaths,meshsizes,meshsize
-
+	
+	#set basepath (workingdir/name)
 	workingdir=path.join(workingdirbase,str(tn))
 	current.set("WorkingDir",workingdir)
 	basepaths[tn]=workingdir
 
+	#set parameters for testcase tn
 	_set_params(tn)
 
 	# generate mesh
@@ -101,7 +114,9 @@ def _export_mesh(tn):
 	meshpaths[tn]=path.join(fullworkingdir,"meshCase")
 
 def _reset_base():
+	#reset path to the workingdir
 	current.set("WorkingDir",workingdirbase)
+	#reset parameters to basecase 
 	_set_params(0)
 
 while failcount>=0:
@@ -231,6 +246,7 @@ for tn in gradienttests:
 	costcorelation2=[]
 	cost2corelation2=[]
 	for pn in rparams:
+		#go through different lines in spreadsheet and save values for sstate
 		for suffix in ("Absolute","Slope","Center"):
 			deviationcorelation2.append(res.cells[pn+suffix+"Deviation"])
 			costcorelation2.append(res.cells[pn+suffix+"Cost"])
@@ -241,7 +257,7 @@ for tn in gradienttests:
 
 print("State:"+str(state))
 print("Cost:"+str(costs))
-print("Gradient (normalized to stepsize:"+str(gradients))
+print("Gradient (normalized to stepsize):"+str(gradients))
 sstate.insertRows("1",1)
 sstate.recompute()
 sstate.set("A1","=tuple"+str(tuple(state.values())))
@@ -260,6 +276,7 @@ except:
 	pass
 	
 print("setting CSV back to main result")
+#set cvs back to the values of configuration 0 
 raw.importFile(path.join(casepaths[0],"mycsv.csv"),",")
 raw.recompute()
 FreeCAD.ActiveDocument.recompute()

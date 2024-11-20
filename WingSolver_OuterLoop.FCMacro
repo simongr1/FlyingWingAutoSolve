@@ -51,7 +51,8 @@ while keepgoing:
 			print("Final cost reached")
 			keepgoing=False
 			break
-
+	
+	#set new learningRate
 	newLR=initialLR*(lrAlpha**(iterations-1))
 	desc.set("LearningRate","%.8f"%newLR)
 
