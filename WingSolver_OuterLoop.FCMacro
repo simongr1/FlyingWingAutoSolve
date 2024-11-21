@@ -36,8 +36,10 @@ lrAlpha=scontrol.cells["LearningRateAlpha"]
 
 keepgoing=True
 while keepgoing:
+	#read numer of iterations formsstate spreadsheet
 	iterations=int(re.findall('\d+',sstate.getUsedRange()[1])[0])
 	try:
+		#read current cost
 		cost=float(sstate.cells["B1"][0])
 	except:
 		cost=-1.0
