@@ -20,7 +20,8 @@ analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
 #load spreadsheets
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
 rdesc=FreeCAD.ActiveDocument.getObjectsByLabel("ResultDescription")[0]
-current=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
+current=FreeCAD.ActiveDocument.getObjectsByLabel("CurrentParameter")[0]
+geometry=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
 analysis=FreeCAD.ActiveDocument.getObjectsByLabel("CfdAnalysis")[0]
 raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
 res=FreeCAD.ActiveDocument.getObjectsByLabel("ResultData")[0]
@@ -78,7 +79,8 @@ def _set_params(tn):
 			print("Setting %s to %s"%(pn,"%E"%test[pn]["current"]))
 		current.set(pn,"%E"%test[pn]["current"])
 
-	current.recompute()
+	current.recompute() #recomputes the spreadsheet for the parameters
+	geometry.recompute() #recomputes the spreadsheet for the wing geometry
 	for obj in FreeCAD.ActiveDocument.Objects:
 		obj.touch()
 
