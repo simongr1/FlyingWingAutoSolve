@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#import FreeCADGui
 
 
 import numpy as np
@@ -11,6 +10,7 @@ import re
 import csv
 import os
 import math
+import pandas as pd
 
 def read_csv(csv_path):
     # Open the CSV file
@@ -44,13 +44,47 @@ def calculate_function(reference,coefficients):
 
     return y
 
+def quadratic(x,a,b,c):
+	return a* x**2 +b* x+ c
+def drag_curve(lift_coefficient, drag_coeffcient):
+	#c_w(c_a)=a*c_a²+b*c_a+d
+	initial_guess = [1, -1, 1]
+	bounds = ([0, -np.inf, 0], [np.inf, 0, np.inf])
+	if len(lift_coefficient) != len(drag_coeffcient):
+		return 0
+	params, _ = sp.optimize.curve_fit(quadratic, lift_coefficient, drag_coeffcient, p0=initial_guess, bounds=bounds)
+	#a,b,d= np.polyfit(lift_coefficient,drag_coeffcient,2)
+	a,b,d= params
+	return [a,b,d]
+def total_to_coefficient(lift_or_drag, density, velocity, reference_area):
+	Force= np.array(lift_or_drag)
+	lift_or_drag_coefficient= Force/(0.5*density*velocity**2*reference_area)
+	return lift_or_drag_coefficient.tolist()
+
+#########Constants#######
+density=1
+g=9.81
+velocity=10
+v_target=15
 
 #You also need to add a 1st iteration
+
 #Get subfolders and sort them
 working_dir= "/home/sgrimm/src/FlyingWing/results"
 
 dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))]
 dirs=sorted(dirs,key=int)
+
+# Create Empty parameter dictionary {'WingArea': [], 'WingSweepAngleLE': [], 'AspectRatio': [], 'TaperRatio': [], 'RootIncidence': [], 'WingTwist': [], 'DihedralAngle': []}
+# e.g. wing area contains the values for all iterations 
+#get parameter names:
+param_names_path= os.path.join(working_dir,dirs[0],"0","parameters.csv")
+param_names=pd.read_csv(param_names_path, usecols=[0,1], header=None)
+param_names=param_names[0].to_list()
+
+parameter={}
+for i in range(len(param_names)):
+      parameter[param_names[i]]=[]  
 
 #Results
 iterations=len(dirs)
@@ -65,27 +99,48 @@ DragForcePoly=[]
 PitchTorquePoly=[]
 RollTorquePoly=[]
 YawTorquePoly=[]
+DragPolar=[] 
 TotalCost=[]
 
 data={"LiftForce":LiftForcePoly,"DragForce":DragForcePoly,
-                  "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly, "TotalCost":TotalCost}
+                  "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolar, "TotalCost":TotalCost}
 results={"names_alpha":names_alpha,"names_beta":names_beta,"alpha":alpha,"beta":beta,"data":data}
 
 for dir in dirs:
+    #read files
     path=os.path.join(working_dir,dir,"0")
     path_res= os.path.join(path,"result.csv")
+    path_parameter=os.path.join(path,"parameters.csv")
+    path_raw=os.path.join(path,"rawresult.csv")
     rows_res=read_csv(path_res)
+
+    #read Parameter
+    
+    # Open the CSV file for paramter
+    params=pd.read_csv(path_parameter, usecols=[0,1], header=None)
+    params_values=params[1].to_list()
+    #Add parameters
+    for i in range(len(param_names)):
+          parameter[param_names[i]].append(float(params_values[i]))
+    
+
+    #extract Polynomial of Total functions
     cells =rows_res[1][1:] #The first cell contains the name of the row
     polynomials=[extract_tupel(cell) for cell in cells] #extract the polynomial
     LiftForce,DragForce,PitchTorque,RollTorque,YawTorque=polynomials
+
+    #extract costs
     TotalCost_value=float(rows_res[30][-1])
+    
+    #determine drag_polar
+    #DragPolar=drag_curve()
     LiftForcePoly.append(LiftForce)
     DragForcePoly.append(DragForce)
     PitchTorquePoly.append(PitchTorque)
     RollTorquePoly.append(RollTorque)
     YawTorquePoly.append(YawTorque)
     TotalCost.append(TotalCost_value)
-    
+
     
 
 
@@ -128,7 +183,7 @@ def plotit(parameter_name,names,results,iterations):
     sm = cm.ScalarMappable(cmap=cmap, norm=norm)  # Scalar mappable for the colorbar
     sm.set_array([])  # Required for ScalarMappable
     cbar = plt.colorbar(sm)
-    cbar.set_label("Iteration Number", fontsize=12)  # Label for the colorbar
+    #cbar.set_label("Iteration Number", fontsize=12)  # Label for the colorbar
 
     plt.legend()
     plt.tight_layout()
@@ -142,67 +197,16 @@ def plotcosts(costs):
     plt.xlabel("Iterations")
     plt.ylabel("Cost")
     plt.show()
+
+
+
+
 #plot alphas
-plotit("alpha",results["names_alpha"],results,iterations)
-fig=plotit("beta",results["names_beta"],results,iterations)
+#plotit("alpha",results["names_alpha"],results,iterations)
+#fig=plotit("beta",results["names_beta"],results,iterations)
 costs=results["data"]["TotalCost"]
-#costs.append(results["data"][i]["TotalCost"] for i in range(0,len(results["data"])))
-plotcosts(costs)
+#plotcosts(costs)
+#plot_graph(alpha_t,lift, hline=4.7*9.81)
+#print(calculate_function(alpha,tuple(results["data"]["LiftForce"][-1])))
 plt.show()
 
-
-# plot betas
-# 
-# 
-# plot rest   
-#print(data)
-
-#Analyse Results:-------------
-
-
-#calculate course of graph
-# different alpha or beta and calculate the resulting function as vector
-# do this for every iteration of the base case (0)
-"""
-sstate=FreeCAD.ActiveDocument.getObjectsByLabel("SolverState")[0]
-iterations=int(re.findall('\d+',sstate.getUsedRange()[1])[0])-1
-print(iterations)
-cells_costs = "B1"+":B"+str(iterations)
-iterations_vector = range(1, iterations+1)
-
-#Extract cost from sstate Costs
-costvector=sstate.cells[cells_costs]
-isolated_costs=[]
-for costs in costvector:
-    isolated_costs.append(costs[0])
-isolated_costs=isolated_costs[::-1]
-
-
-
-
-
-# Create a grid of subplots
-rows, cols = 2,1  # Grid layout: 2 rows, 2 columns
-fig, axes = plt.subplots(rows, cols, figsize=(12, 8), sharex=True, sharey=True)
-
-# Titles for each subplot
-titles = ['Costs', "Costs again"]
-#Vectors
-vectors=[isolated_costs, isolated_costs]
-# Plot each cost vector in the grid
-for i, ax in enumerate(axes.flat):  # Flatten the grid to iterate easily
-    ax.plot(iterations_vector, vectors[i], marker='o', linestyle='-', label=f'Series {i+1}')
-    ax.set_title(titles[i], fontsize=12)
-    ax.set_xlabel('Iteration', fontsize=10)
-    ax.set_ylabel('Cost', fontsize=10)
-    ax.grid(True, linestyle='--', alpha=0.6)
-    ax.legend(fontsize=9)
-    ax.set_xticks(iterations_vector)
-
-
-# Adjust layout to prevent overlapping
-plt.tight_layout()
-
-# Show the plots
-plt.show()
-"""
