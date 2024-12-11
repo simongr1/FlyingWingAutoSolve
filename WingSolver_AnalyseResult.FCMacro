@@ -6,11 +6,30 @@ import FreeCAD
 
 import numpy as np
 import scipy as sp
+import math
 
+def quadratic(x,a,b,c):
+	return a* x**2 +b* x+ c
+def drag_curve(lift_coefficient, drag_coeffcient):
+	#c_w(c_a)=a*c_a²+b*c_a+d
+	initial_guess = [1, -1, 1]
+	bounds = ([0, -np.inf, 0], [np.inf, 0, np.inf])
+	if len(lift_coefficient) != len(drag_coeffcient):
+		return 0
+	params, _ = sp.optimize.curve_fit(quadratic, lift_coefficient, drag_coeffcient, p0=initial_guess, bounds=bounds)
+	#a,b,d= np.polyfit(lift_coefficient,drag_coeffcient,2)
+	a,b,d= params
+	return [a,b,d]
+def total_to_coefficient(lift_or_drag, density, velocity, reference_area):
+	Force= np.array(lift_or_drag)
+	lift_or_drag_coefficient= Force/(0.5*density*velocity**2*reference_area)
+	return lift_or_drag_coefficient.tolist()
 
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ResultDescription")[0]
 raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
 res=FreeCAD.ActiveDocument.getObjectsByLabel("ResultData")[0]
+geometry=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
+computed=FreeCAD.ActiveDocument.getObjectsByLabel("ComputedValues")[0]
 
 paramnames=desc.cells[desc.cells["ParameterNames"]]
 paramfields=desc.cells[desc.cells["Fields"]]
@@ -46,5 +65,31 @@ for param in params.values():
 		res.set(param["name"]+"Center","%E"%param["center"])
 		res.set(param["name"]+"Slope","%E"%param["slope"])
 		res.set(param["name"]+"ZeroValue","%E"%fit[-1])
+
+#calculate Drag Polar
+AIR_DENSITY=1
+GRAVITY_CONSTANT=9.81
+velocity=geometry.get("Velocity")
+v_target=velocity
+area=geometry.get("WingArea")*1e-6
+mass=computed.get("TotalMass")
+lift_force=params["LiftForce"]["data"]
+drag_force=[-x for x in params["DragForce"]["data"]]
+lift_coefficient=total_to_coefficient(lift_force,AIR_DENSITY,velocity,area)
+drag_coefficient=total_to_coefficient(drag_force,AIR_DENSITY,velocity,area)
+drag_curve_poly=drag_curve(lift_coefficient,drag_coefficient)
+res.set("DragPolarParameters","tuple"+str(tuple([ float(x) for x in drag_curve_poly ])))
+
+
+
+#Calculate Costs
+a,b,d=drag_curve_poly
+c_a_bestendurance=(math.sqrt(12*a*d+b**2)+b)/2*a
+Lift_diff= mass*GRAVITY_CONSTANT/(0.5*AIR_DENSITY*v_target**2*area)-c_a_bestendurance
+c_w_bestendurance=a*c_a_bestendurance**2+b*c_a_bestendurance+d
+
+cost=((Lift_diff*1e1)**2+(c_w_bestendurance*1e3)**2)*5
+res.set("TotalCost","%E"%cost)
+
 
 FreeCAD.ActiveDocument.recompute()

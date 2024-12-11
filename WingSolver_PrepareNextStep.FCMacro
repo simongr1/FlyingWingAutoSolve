@@ -2,7 +2,7 @@ import FreeCAD
 
 
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
-current=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
+current=FreeCAD.ActiveDocument.getObjectsByLabel("CurrentParameter")[0]
 sstate=FreeCAD.ActiveDocument.getObjectsByLabel("SolverState")[0]
 
 paramnames=desc.cells[desc.cells["ParameterNames"]]
