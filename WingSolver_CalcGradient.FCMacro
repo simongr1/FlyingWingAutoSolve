@@ -242,6 +242,7 @@ for tn in gradienttests:
 	raw.exportFile(path.join(basepaths[tn],"rawresult.csv"),",")
 	res.exportFile(path.join(basepaths[tn],"result.csv"),",")
 	current.exportFile(path.join(basepaths[tn],"parameters.csv"),",")
+	geometry.exportFile(path.join(basepaths[tn],"geometry.csv"),",")
 	gradients[tn]=costs[tn]-costs[0]
 	state[tn]=params[tn]["current"]
 	deviationcorelation2=[]

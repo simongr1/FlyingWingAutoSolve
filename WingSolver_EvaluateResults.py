@@ -86,6 +86,14 @@ parameter={}
 for i in range(len(param_names)):
       parameter[param_names[i]]=[]  
 
+geometry_names_path= os.path.join(working_dir,dirs[0],"0","geometry.csv")
+geometry_names=pd.read_csv(geometry_names_path, usecols=[3,4],header=None,skiprows=1)
+geometry_names= geometry_names.dropna()
+geometry_names=geometry_names[3].to_list()
+
+geometry={}
+for i in range(len(geometry_names)):
+      geometry[geometry_names[i]]=[]  
 #Results
 iterations=len(dirs)
 names_alpha=["LiftForce","DragForce","PitchTorque"]
@@ -99,19 +107,21 @@ DragForcePoly=[]
 PitchTorquePoly=[]
 RollTorquePoly=[]
 YawTorquePoly=[]
-DragPolar=[] 
+DragPolarPoly=[] 
 TotalCost=[]
 
 data={"LiftForce":LiftForcePoly,"DragForce":DragForcePoly,
-                  "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolar, "TotalCost":TotalCost}
+                  "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolarPoly, "TotalCost":TotalCost}
 results={"names_alpha":names_alpha,"names_beta":names_beta,"alpha":alpha,"beta":beta,"data":data}
 
+current_iteration=0
 for dir in dirs:
     #read files
     path=os.path.join(working_dir,dir,"0")
     path_res= os.path.join(path,"result.csv")
     path_parameter=os.path.join(path,"parameters.csv")
     path_raw=os.path.join(path,"rawresult.csv")
+    path_geometry=os.path.join(path,"geometry.csv")
     rows_res=read_csv(path_res)
 
     #read Parameter
@@ -123,6 +133,14 @@ for dir in dirs:
     for i in range(len(param_names)):
           parameter[param_names[i]].append(float(params_values[i]))
     
+    #Open CSV file for geometry
+    geometry_values=pd.read_csv(path_geometry, usecols=[3,4], header=None, skiprows=1)
+    geometry_values=geometry_values.dropna()
+    geometry_values=geometry_values[4].to_list()
+    #Add values
+    for i in range(len(geometry_names)):
+          geometry[geometry_names[i]].append(float(geometry_values[i]))
+    
 
     #extract Polynomial of Total functions
     cells =rows_res[1][1:] #The first cell contains the name of the row
@@ -133,16 +151,20 @@ for dir in dirs:
     TotalCost_value=float(rows_res[30][-1])
     
     #determine drag_polar
-    #DragPolar=drag_curve()
+    DragPolar=[0]
+    #ToDo import drag polar from results
+
     LiftForcePoly.append(LiftForce)
     DragForcePoly.append(DragForce)
     PitchTorquePoly.append(PitchTorque)
     RollTorquePoly.append(RollTorque)
     YawTorquePoly.append(YawTorque)
     TotalCost.append(TotalCost_value)
+    DragPolarPoly.append(DragPolar)
 
-    
+    current_iteration +=1
 
+print(geometry)
 
 def plotit(parameter_name,names,results,iterations):
     x= results[parameter_name]
@@ -209,4 +231,3 @@ costs=results["data"]["TotalCost"]
 #plot_graph(alpha_t,lift, hline=4.7*9.81)
 #print(calculate_function(alpha,tuple(results["data"]["LiftForce"][-1])))
 plt.show()
-
