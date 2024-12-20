@@ -26,6 +26,7 @@ analysis=FreeCAD.ActiveDocument.getObjectsByLabel("CfdAnalysis")[0]
 raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
 res=FreeCAD.ActiveDocument.getObjectsByLabel("ResultData")[0]
 sstate=FreeCAD.ActiveDocument.getObjectsByLabel("SolverState")[0]
+mass=FreeCAD.ActiveDocument.getObjectsByLabel("ComputedValues")[0]
 
 #get workingdir
 basedir=desc.cells["BaseDir"]
@@ -243,6 +244,7 @@ for tn in gradienttests:
 	res.exportFile(path.join(basepaths[tn],"result.csv"),",")
 	current.exportFile(path.join(basepaths[tn],"parameters.csv"),",")
 	geometry.exportFile(path.join(basepaths[tn],"geometry.csv"),",")
+	mass.exportFile(path.join(basepaths[tn],"mass.csv"),",")
 	gradients[tn]=costs[tn]-costs[0]
 	state[tn]=params[tn]["current"]
 	deviationcorelation2=[]
