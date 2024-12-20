@@ -74,7 +74,7 @@ while keepgoing:
 		subfolder=os.path.join(outputfoldername,p)
 		srcfolder=os.path.join(workingdirbase,p)
 		os.makedirs(subfolder,exist_ok=True)
-		for f in ("rawresult.csv","result.csv","parameters.csv"):
+		for f in ("rawresult.csv","result.csv","parameters.csv","geometry.csv","mass.csv"):
 			srcfile=os.path.join(srcfolder,f)
 			dstfile=os.path.join(subfolder,f)
 			try:
@@ -83,7 +83,7 @@ while keepgoing:
 				print("Could not copy file %s, %s"%(srcfile,str(e)))
 
 	print("Plotting Result:")
-	CfdTools.executeMacro(plotResultMacro)
+	#CfdTools.executeMacro(plotResultMacro)
 print("done")
 end_time=time.time()
 # Calculate and format the total runtime
