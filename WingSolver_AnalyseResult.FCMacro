@@ -7,6 +7,7 @@ import FreeCAD
 import numpy as np
 import scipy as sp
 import math
+import re
 
 def quadratic(x,a,b,c):
 	return a* x**2 +b* x+ c
@@ -24,6 +25,14 @@ def total_to_coefficient(lift_or_drag, density, velocity, reference_area):
 	Force= np.array(lift_or_drag)
 	lift_or_drag_coefficient= Force/(0.5*density*velocity**2*reference_area)
 	return lift_or_drag_coefficient.tolist()
+def extract_tupel(cell_content):
+    #cell_content = "tuple(-0.0876859194475919; -0.390034184491187; -3.2973569606838)"
+    # Extract numbers using a regular expression
+    numbers = re.findall(r"-?\d+\.\d+", cell_content)  # Matches decimal numbers, including negatives
+
+    # Convert the strings to floats
+    numbers = [float(num) for num in numbers]
+    return numbers #extracted list
 
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ResultDescription")[0]
 raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
@@ -62,7 +71,7 @@ for param in params.values():
 			param["slope"]=3.*fit[0]*best**2 + 2*fit[1]*best + fit[2] # derivative
 		res.set(param["name"]+"Parameters","tuple"+str(tuple([ float(x) for x in fit ])))
 		#res.set(param["name"]+"Parameters","=tuple"+str(tuple(fit)))
-		res.set(param["name"]+"Center","%E"%param["center"])
+		res.set(param["name"]+"Center","%E"%param["center"]) #(root of the polynomial
 		res.set(param["name"]+"Slope","%E"%param["slope"])
 		res.set(param["name"]+"ZeroValue","%E"%fit[-1])
 
@@ -71,24 +80,68 @@ AIR_DENSITY=1
 GRAVITY_CONSTANT=9.81
 velocity=geometry.get("Velocity")
 v_target=velocity
-area=geometry.get("WingArea")*1e-6
-mass=computed.get("TotalMass")
-lift_force=params["LiftForce"]["data"]
-drag_force=[-x for x in params["DragForce"]["data"]]
-lift_coefficient=total_to_coefficient(lift_force,AIR_DENSITY,velocity,area)
-drag_coefficient=total_to_coefficient(drag_force,AIR_DENSITY,velocity,area)
+area_msq=geometry.get("WingArea")*1e-6
+mass_kg=computed.get("TotalMass")
+lift_force_N=params["LiftForce"]["data"]
+drag_force_N=[-x for x in params["DragForce"]["data"]]
+lift_coefficient=total_to_coefficient(lift_force_N,AIR_DENSITY,velocity,area_msq)
+drag_coefficient=total_to_coefficient(drag_force_N,AIR_DENSITY,velocity,area_msq)
 drag_curve_poly=drag_curve(lift_coefficient,drag_coefficient)
 res.set("DragPolarParameters","tuple"+str(tuple([ float(x) for x in drag_curve_poly ])))
 
 
-
-#Calculate Costs
+#Cost Function 1
+#Calculate Costs 
 a,b,d=drag_curve_poly
+#Lift and drag
 c_a_bestendurance=(math.sqrt(12*a*d+b**2)+b)/2*a
-Lift_diff= mass*GRAVITY_CONSTANT/(0.5*AIR_DENSITY*v_target**2*area)-c_a_bestendurance
 c_w_bestendurance=a*c_a_bestendurance**2+b*c_a_bestendurance+d
+c_g=mass_kg*GRAVITY_CONSTANT/(0.5*AIR_DENSITY*v_target**2*area_msq)
 
-cost=((Lift_diff*1e1)**2+(c_w_bestendurance*1e3)**2)*5
+#pitch stability
+#in trimmed position alpha=0
+pitch_torque_trimmed_fligth=res.get("PitchTorqueZeroValue") # must be zero
+#calculate static margin:
+staticMarginGoal=0.12
+TaperRatio=geometry.get("TaperRatio")
+RootChord=geometry.get("RootChord")
+meanChordLength_mm=2/3*RootChord*(1+TaperRatio+TaperRatio**2)/(1+TaperRatio)
+alphaZeroLift=params["LiftForce"]["center"]
+pitch_torque_AC=np.polyval(extract_tupel(res.get("PitchTorqueParameters")),alphaZeroLift) #evalute pitch torque at zero lift angle
+
+try:
+	#catch possible division by zero
+	liftForcePoly=extract_tupel(res.get("LiftForce"))
+	pitchTorquePoly=extract_tupel(res.get("PitchTorque"))
+	xPositionaAC_reverse_m=(pitchTorquePoly[-1]-pitch_torque_AC)/liftForcePoly[-1] #calculate ac position for alpha=0
+except: 
+	i=int(len(lift_force_N)/2) #take middle value
+	xPositionaAC_reverse_m=(params["PitchTorque"]["data"][i]-pitch_torque_AC)/lift_force_N[i]
+
+staticMargin= xPositionaAC_reverse_m/(meanChordLength_mm*1e-3)
+
+#Error calculation
+Lift_diff= (-1/(0.01*c_g)*(c_a_bestendurance-c_g))**2 #1% deviation allowed
+static_margin_diff=(-1/(0.1*staticMarginGoal)*(staticMargin-staticMarginGoal))**2 #10% devaition allowed
+pitch_torque_trimmed_diff=(0.5-pitch_torque_trimmed_fligth+1)**2 #when below 0.5Nm allowed
+#must be zero
+Drag_diff=(c_w_bestendurance*1e3)**2
+
+
+cost=Lift_diff+static_margin_diff+pitch_torque_trimmed_diff+Drag_diff
+res.set("LiftGoal","%E"%c_g)
+res.set("DragGoal","%E"%0)
+res.set("StaticMarginGoal","%E"%staticMarginGoal)
+res.set("TrimGoal","%E"%0.5)
+res.set("LiftCurrent","%E"%c_a_bestendurance)
+res.set("DragCurrent","%E"%c_w_bestendurance)
+res.set("StaticMarginCurrent","%E"%staticMargin)
+res.set("TrimCurrent","%E"%pitch_torque_trimmed_fligth)
+res.set("LiftCost","%E"%Lift_diff)
+res.set("DragCost","%E"%Drag_diff)
+res.set("StaticMarginCost","%E"%static_margin_diff)
+res.set("TrimCost","%E"%pitch_torque_trimmed_diff)
+
 res.set("TotalCost","%E"%cost)
 
 
