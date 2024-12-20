@@ -143,7 +143,7 @@ for dir in dirs:
     
 
     #extract Polynomial of Total functions
-    cells =rows_res[1][1:] #The first cell contains the name of the row
+    cells =rows_res[1][1:6] #The first cell contains the name of the row
     polynomials=[extract_tupel(cell) for cell in cells] #extract the polynomial
     LiftForce,DragForce,PitchTorque,RollTorque,YawTorque=polynomials
 
@@ -169,7 +169,7 @@ print(geometry)
 def plotit(parameter_name,names,results,iterations):
     x= results[parameter_name]
     number_of_iterations= iterations
-    fraction_of_iterations= 5  # set to 2 to only plot half the iterations
+    fraction_of_iterations= 1  # set to 2 to only plot half the iterations
     # Create a figure with subplots
     n_plots=len(names)
     cols=3
@@ -224,10 +224,10 @@ def plotcosts(costs):
 
 
 #plot alphas
-#plotit("alpha",results["names_alpha"],results,iterations)
-#fig=plotit("beta",results["names_beta"],results,iterations)
+plotit("alpha",results["names_alpha"],results,iterations)
+fig=plotit("beta",results["names_beta"],results,iterations)
 costs=results["data"]["TotalCost"]
-#plotcosts(costs)
+plotcosts(costs)
 #plot_graph(alpha_t,lift, hline=4.7*9.81)
 #print(calculate_function(alpha,tuple(results["data"]["LiftForce"][-1])))
 plt.show()
