@@ -94,6 +94,15 @@ geometry_names=geometry_names[3].to_list()
 geometry={}
 for i in range(len(geometry_names)):
       geometry[geometry_names[i]]=[]  
+
+mass_names_path= os.path.join(working_dir,dirs[0],"0","mass.csv")
+mass_names=pd.read_csv(mass_names_path, usecols=[0,1],header=None,skiprows=1)
+mass_names= mass_names.dropna()
+mass_names=mass_names[0].to_list()
+mass={}
+for i in range(len(mass_names)):
+      mass[mass_names[i]]=[] 
+
 #Results
 iterations=len(dirs)
 names_alpha=["LiftForce","DragForce","PitchTorque"]
@@ -122,6 +131,7 @@ for dir in dirs:
     path_parameter=os.path.join(path,"parameters.csv")
     path_raw=os.path.join(path,"rawresult.csv")
     path_geometry=os.path.join(path,"geometry.csv")
+    path_mass=os.path.join(path,"mass.csv")
     rows_res=read_csv(path_res)
 
     #read Parameter
@@ -140,7 +150,14 @@ for dir in dirs:
     #Add values
     for i in range(len(geometry_names)):
           geometry[geometry_names[i]].append(float(geometry_values[i]))
-    
+
+    #Open CSV file for mass
+    mass_values=pd.read_csv(path_mass, usecols=[0,1], header=None, skiprows=1)
+    mass_values=mass_values.dropna()
+    mass_values=mass_values[1].to_list()
+    #Add values
+    for i in range(len(mass_names)):
+          mass[mass_names[i]].append(float(mass_values[i]))
 
     #extract Polynomial of Total functions
     cells =rows_res[1][1:6] #The first cell contains the name of the row
@@ -163,8 +180,7 @@ for dir in dirs:
     DragPolarPoly.append(DragPolar)
 
     current_iteration +=1
-
-print(geometry)
+print(mass)
 
 def plotit(parameter_name,names,results,iterations):
     x= results[parameter_name]
