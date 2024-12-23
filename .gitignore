@@ -1,4 +1,6 @@
 workingdir/
 results/
 test.py
+workspace.py
 *.FCBak
+evaluation/
