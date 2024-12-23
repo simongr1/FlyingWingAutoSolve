@@ -11,6 +11,7 @@ import csv
 import os
 import math
 import pandas as pd
+from matplotlib.ticker import MaxNLocator
 
 def read_csv(csv_path):
     # Open the CSV file
@@ -180,7 +181,6 @@ for dir in dirs:
     DragPolarPoly.append(DragPolar)
 
     current_iteration +=1
-print(mass)
 
 def plotit(parameter_name,names,results,iterations):
     x= results[parameter_name]
@@ -227,6 +227,51 @@ def plotit(parameter_name,names,results,iterations):
     plt.tight_layout()
     return fig
 
+def plotit2(parameter_values,y_polys,iterations,name="Lift Force",x_label="Alpha[°]",y_label="Force [N]",hLine=None):
+    #parameter_values: list of all alpha values
+    fig, ax=plt.subplots()
+    x= parameter_values
+    #y_polys
+    number_of_iterations= iterations
+    fraction_of_iterations= 1  # set to 2 to only plot half the iterations
+    
+    cmap = cm.winter
+    norm= colors.Normalize(vmin=1, vmax=number_of_iterations)
+    colors_list= cmap(norm(range(1, number_of_iterations +1 )))
+
+    # Plot horizontal line (y=0) with thicker line
+    ax.axhline(y=0, color='black', linewidth=2)
+
+    # Plot vertical line (x=0) with thicker line
+    ax.axvline(x=0, color='black', linewidth=2)
+
+
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True, prune='both', numticks=10))  # numticks controls the number of ticks
+    #plot all iterations
+    for iteration in range(0,number_of_iterations,fraction_of_iterations):
+        poly = y_polys[iteration]  # Generate data for plot
+        y= calculate_function(x,poly)
+        ax.plot(x, y, color=colors_list[iteration])
+    ax.set_title(name)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.grid(True)
+
+    if hLine is not None:
+         ax.axhline(y=hLine, color="r", linestyle="--")
+        #hier wird hline geplottet     
+   
+    # Add the colorbar
+    sm = cm.ScalarMappable(cmap=cmap, norm=norm)  # Scalar mappable for the colorbar
+    sm.set_array([])  # Required for ScalarMappable
+    cbar = plt.colorbar(sm)
+    cbar.set_label('Number of iteration', rotation=270)
+    #cbar.set_label("Iteration Number", fontsize=12)  # Label for the colorbar
+
+    plt.legend()
+    plt.tight_layout()
+    return fig
+
 def plotcosts(costs):
     plt.figure()
     x=range(1,len(costs)+1)
@@ -240,10 +285,21 @@ def plotcosts(costs):
 
 
 #plot alphas
-plotit("alpha",results["names_alpha"],results,iterations)
-fig=plotit("beta",results["names_beta"],results,iterations)
-costs=results["data"]["TotalCost"]
-plotcosts(costs)
-#plot_graph(alpha_t,lift, hline=4.7*9.81)
-#print(calculate_function(alpha,tuple(results["data"]["LiftForce"][-1])))
-plt.show()
+#plotit("alpha",results["names_alpha"],results,iterations)
+#fig=plotit("beta",results["names_beta"],results,iterations)
+#costs=results["data"]["TotalCost"]
+#plotcosts(costs)
+
+figLiftForce=plotit2(results["alpha"],results["data"]["LiftForce"],iterations, hLine=mass["TotalMass"][-1]*9.81)
+figDragForce=plotit2(results["alpha"],results["data"]["DragForce"],iterations,name="DragForce")
+figPitchTorque=plotit2(results["alpha"],results["data"]["PitchTorque"],iterations,name="PitchTorque")
+figYawTorque=plotit2(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque",x_label="Beta [°]", y_label="Torque [Nm]")
+figRollTorque=plotit2(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque",x_label="Beta [°]", y_label="Torque [Nm]")
+figLiftForce.savefig("evaluation/test.png")
+plots={"figLiftForce":figLiftForce,"figDragForce":figDragForce,"figPitchTorque":figPitchTorque,"figYawTorque":figYawTorque,"figRollTorque":figRollTorque}
+#save plots
+for key in plots:
+     plots[key].savefig(f"./evaluation/{key}.png")
+#plt.show()
+
+
