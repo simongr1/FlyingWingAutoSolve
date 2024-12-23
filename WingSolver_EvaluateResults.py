@@ -227,7 +227,7 @@ def plotit(parameter_name,names,results,iterations):
     plt.tight_layout()
     return fig
 
-def plotit2(parameter_values,y_polys,iterations,name="Lift Force",x_label="Alpha[°]",y_label="Force [N]",hLine=None):
+def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label="Alpha[°]",y_label="Force [N]",hLine=None):
     #parameter_values: list of all alpha values
     fig, ax=plt.subplots()
     x= parameter_values
@@ -272,14 +272,18 @@ def plotit2(parameter_values,y_polys,iterations,name="Lift Force",x_label="Alpha
     plt.tight_layout()
     return fig
 
-def plotcosts(costs):
-    plt.figure()
-    x=range(1,len(costs)+1)
-    plt.scatter(x,costs,color="red",label="Data")
-    plt.title("Costfunction")
-    plt.xlabel("Iterations")
-    plt.ylabel("Cost")
-    plt.show()
+def plotOverIterations(y_values,name="Cost",x_label="Iterations",y_label="Cost", hLines=None):
+    fig,ax = plt.subplots()
+    x=range(1,len(y_values)+1)
+    ax.scatter(x,y_values,color="red",label=name)
+    ax.set_title(name)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    if isinstance(hLines, list):
+         for h_value in hLines:
+              ax.axhline(y=h_value, color="r", linestyle="--")
+    return fig
+
 
 
 
@@ -290,16 +294,24 @@ def plotcosts(costs):
 #costs=results["data"]["TotalCost"]
 #plotcosts(costs)
 
-figLiftForce=plotit2(results["alpha"],results["data"]["LiftForce"],iterations, hLine=mass["TotalMass"][-1]*9.81)
-figDragForce=plotit2(results["alpha"],results["data"]["DragForce"],iterations,name="DragForce")
-figPitchTorque=plotit2(results["alpha"],results["data"]["PitchTorque"],iterations,name="PitchTorque")
-figYawTorque=plotit2(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque",x_label="Beta [°]", y_label="Torque [Nm]")
-figRollTorque=plotit2(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque",x_label="Beta [°]", y_label="Torque [Nm]")
-figLiftForce.savefig("evaluation/test.png")
+figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations, hLine=mass["TotalMass"][-1]*9.81)
+figDragForce=plot_function(results["alpha"],results["data"]["DragForce"],iterations,name="DragForce")
+figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],iterations,name="PitchTorque")
+figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque",x_label="Beta [°]", y_label="Torque [Nm]")
+figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque",x_label="Beta [°]", y_label="Torque [Nm]")
+figCosts=plotOverIterations(results["data"]["TotalCost"])
+figCosts.savefig("./evaluation/TotalCost.png")
 plots={"figLiftForce":figLiftForce,"figDragForce":figDragForce,"figPitchTorque":figPitchTorque,"figYawTorque":figYawTorque,"figRollTorque":figRollTorque}
 #save plots
 for key in plots:
      plots[key].savefig(f"./evaluation/{key}.png")
-#plt.show()
+plt.close("all")
+parameterPlots={}
+for parameterName in parameter:
+    parameterPlots[parameterName]=plotOverIterations(parameter[parameterName],name=parameterName,y_label=parameterName)
+    parameterPlots[parameterName].savefig(f"./evaluation/parameter/{parameterName}.png")
+    #Die Einheiten Stimmen noch nicht
+plt.close("all")
+plt.show()
 
 
