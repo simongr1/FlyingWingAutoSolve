@@ -104,7 +104,7 @@ def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label=
     cbar.set_label('Number of iteration', rotation=270)
     #cbar.set_label("Iteration Number", fontsize=12)  # Label for the colorbar
 
-    plt.legend()
+    #plt.legend() #this line causes tis error: No handles with labels found to put in legend. 
     plt.tight_layout()
     return fig
 
@@ -144,7 +144,7 @@ for directory in directories:
         print(f"Created directory: {directory}")
    
 
-dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))]
+dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))and d.isdigit()]
 dirs=sorted(dirs,key=int)
 
 # Create Empty parameter dictionary {'WingArea': [], 'WingSweepAngleLE': [], 'AspectRatio': [], 'TaperRatio': [], 'RootIncidence': [], 'WingTwist': [], 'DihedralAngle': []}
@@ -296,5 +296,10 @@ for costterm in cost:
      plot=plotOverIterations(diff[costterm], name=f"diff {costterm}", y_label="difference to goal")
      plot.savefig(f"./evaluation/cost/diff_{costterm}.png")
 plt.close("all")
+
+#print information on program:
+print(f"Read from: {working_dir}")
+print(f"Used parameter: {parameter.keys()}")
+print(f"CostTerms: {cost.keys()}")
 
 
