@@ -121,7 +121,7 @@ except:
 staticMargin= xPositionaAC_reverse_m/(meanChordLength_mm*1e-3)
 
 #Error calculation
-Lift_diff= (-1/(0.01*c_g)*(c_a_bestendurance-c_g))**2 #1% deviation allowed
+Lift_diff= (-1/(0.05*c_g)*(c_a_bestendurance-c_g))**2 #1% deviation allowed
 static_margin_diff=(-1/(0.1*staticMarginGoal)*(staticMargin-staticMarginGoal))**2 #10% devaition allowed
 pitch_torque_trimmed_diff=(0.5-pitch_torque_trimmed_fligth+1)**2 #when below 0.5Nm allowed
 #must be zero
