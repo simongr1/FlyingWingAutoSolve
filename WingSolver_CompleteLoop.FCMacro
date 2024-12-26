@@ -4,7 +4,7 @@
 import FreeCAD
 import FreeCADGui
 
-from os import path
+import os
 from CfdOF.Mesh import CfdMeshTools
 from CfdOF import CfdTools
 import re
@@ -16,21 +16,21 @@ from datetime import timedelta
 
 
 
-mydir = path.dirname(__file__)
+mydir = os.path.dirname(__file__)
 
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
 sstate=FreeCAD.ActiveDocument.getObjectsByLabel("SolverState")[0]
 scontrol=FreeCAD.ActiveDocument.getObjectsByLabel("SolverControl")[0]
 
 basedir=desc.cells["BaseDir"]
-workingdirbase=path.join(basedir,"workingdir")
+workingdirbase=os.path.join(basedir,"workingdir")
 resultdirbase=os.path.join(basedir,"results")
 
-prepareNextStepMacro=path.join(mydir, 'WingSolver_PrepareNextStep.FCMacro')
-calcGradientMacro=path.join(mydir, 'WingSolver_CalcGradient.FCMacro')
-plotResultMacro=path.join(mydir, 'WingSolver_PlotResult.FCMacro')
-outerLoopMarcro=path.join(mydir, 'WingSolver_OuterLoop.FCMacro')
-resetDefaultsMacro=path.join(mydir, 'WingSolver_ResetDefaults.FCMacro')
+prepareNextStepMacro=os.path.join(mydir, 'WingSolver_PrepareNextStep.FCMacro')
+calcGradientMacro=os.path.join(mydir, 'WingSolver_CalcGradient.FCMacro')
+plotResultMacro=os.path.join(mydir, 'WingSolver_PlotResult.FCMacro')
+outerLoopMarcro=os.path.join(mydir, 'WingSolver_OuterLoop.FCMacro')
+resetDefaultsMacro=os.path.join(mydir, 'WingSolver_ResetDefaults.FCMacro')
 
 
 
@@ -57,13 +57,4 @@ for p in ("0",)+paramnames:
             print("Could not copy file %s, %s"%(srcfile,str(e)))
 CfdTools.executeMacro(outerLoopMarcro)
 
-desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
-sstate=FreeCAD.ActiveDocument.getObjectsByLabel("SolverState")[0]
-scontrol=FreeCAD.ActiveDocument.getObjectsByLabel("SolverControl")[0]
-
-
-
-paramnames=desc.cells[desc.cells["ParameterNames"]]
-
-
-
+print("Finished complete loop")
