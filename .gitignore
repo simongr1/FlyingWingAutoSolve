@@ -4,3 +4,4 @@ test.py
 workspace.py
 *.FCBak
 evaluation/
+password.txt

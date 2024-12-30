@@ -3,7 +3,7 @@
 # Macro Begin: /home/eprice/.local/share/FreeCAD/Macro/WingSolver_OuterLoop.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
 import FreeCAD
 import FreeCADGui
-
+import emailForError
 import os
 from CfdOF.Mesh import CfdMeshTools
 from CfdOF import CfdTools
@@ -90,3 +90,4 @@ end_time=time.time()
 total_time = end_time - start_time
 formatted_time = str(timedelta(seconds=total_time))
 print(f"Total runtime: {formatted_time}")
+emailForError.send_email("Program finished succesfully",f"Finished succefully after {formatted_time} \nYou can now save the data and start a new simulation")
