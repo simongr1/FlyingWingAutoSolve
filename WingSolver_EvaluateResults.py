@@ -200,6 +200,8 @@ YawTorquePoly=[]
 DragPolarPoly=[] 
 TotalCost=[]
 
+target_values_lift=[]
+current_values_lift=[]
 data={"LiftForce":LiftForcePoly,"DragForce":DragForcePoly,
                   "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolarPoly, "TotalCost":TotalCost}
 results={"names_alpha":names_alpha,"names_beta":names_beta,"alpha":alpha,"beta":beta,"data":data}
@@ -241,10 +243,14 @@ for dir in dirs:
           mass[mass_names[i]].append(float(mass_values[i]))
 
     #Open CSV file for cost
-    cost_values=pd.read_csv(path_res, usecols=[3,7], header=None, skiprows=29)
+    cost_values=pd.read_csv(path_res, usecols=[1,2,3,7], header=None, skiprows=29)
     cost_values=cost_values.dropna()
     cost_values_squared=cost_values[7].to_list()
     diff_values=cost_values[3].tolist()
+    target_values=cost_values[1].tolist()
+    current_values=cost_values[2].tolist()
+    target_values_lift.append(target_values[0])
+    current_values_lift.append(current_values[0])
     #Add values
     for i in range(len(cost_names)):
           cost[cost_names[i]].append(float(cost_values_squared[i]))
