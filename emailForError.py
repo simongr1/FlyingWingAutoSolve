@@ -10,7 +10,7 @@ def get_password(file_path):
         return file.read().strip()  # Strips any extra whitespace or newline
 
 # Example usage
-password_file = "password.txt"  # Replace with the path to your password file
+password_file = "/home/sgrimm/src/FlyingWing/password.txt"  # Replace with the path to your password file
 
 # Use the password for your email function
 print("Password retrieved successfully.")
@@ -20,6 +20,7 @@ SMTP_SERVER = "mail.gmx.net"  # Replace with your SMTP server
 SMTP_PORT = 587
 EMAIL = "***REMOVED***"
 PASSWORD = get_password(password_file)
+print("EMAIL configured")
 TO_EMAIL = "***REMOVED***"
 
 def send_email(subject, body):
