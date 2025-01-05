@@ -12,6 +12,8 @@ import math
 import shutil
 import time
 from datetime import timedelta
+import traceback
+import emailForError
 
 
 
@@ -38,23 +40,27 @@ resetDefaultsMacro=os.path.join(mydir, 'WingSolver_ResetDefaults.FCMacro')
 
 paramnames=desc.cells[desc.cells["ParameterNames"]]
 
+try:
+    CfdTools.executeMacro(resetDefaultsMacro)
+    CfdTools.executeMacro(calcGradientMacro)
+    #copy all the folders to results 1
+    print("Collecting results:")
+    outputfoldername=os.path.join(resultdirbase,str(1))
+    for p in ("0",)+paramnames:
+        subfolder=os.path.join(outputfoldername,p)
+        srcfolder=os.path.join(workingdirbase,p)
+        os.makedirs(subfolder,exist_ok=True)
+        for f in ("rawresult.csv","result.csv","parameters.csv","geometry.csv","mass.csv"):
+            srcfile=os.path.join(srcfolder,f)
+            dstfile=os.path.join(subfolder,f)
+            try:
+                shutil.copy(srcfile,dstfile)
+            except Exception as e:
+                print("Could not copy file %s, %s"%(srcfile,str(e)))
+    CfdTools.executeMacro(outerLoopMarcro)
+    print("Finished complete loop")
+    
+except Exception as e:
+    error_message = traceback.format_exc()
+    emailForError.send_email("Error",error_message)
 
-CfdTools.executeMacro(resetDefaultsMacro)
-CfdTools.executeMacro(calcGradientMacro)
-#copy all the folders to results 1
-print("Collecting results:")
-outputfoldername=os.path.join(resultdirbase,str(1))
-for p in ("0",)+paramnames:
-    subfolder=os.path.join(outputfoldername,p)
-    srcfolder=os.path.join(workingdirbase,p)
-    os.makedirs(subfolder,exist_ok=True)
-    for f in ("rawresult.csv","result.csv","parameters.csv","geometry.csv","mass.csv"):
-        srcfile=os.path.join(srcfolder,f)
-        dstfile=os.path.join(subfolder,f)
-        try:
-            shutil.copy(srcfile,dstfile)
-        except Exception as e:
-            print("Could not copy file %s, %s"%(srcfile,str(e)))
-CfdTools.executeMacro(outerLoopMarcro)
-
-print("Finished complete loop")
