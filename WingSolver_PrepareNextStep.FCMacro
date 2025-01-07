@@ -44,7 +44,7 @@ for i in range(len(paramnames)):
 		params[paramnames[i]]["current"]=params[paramnames[i]]["max"]
 		print("limiting %s to upper limit"%paramnames[i])
 	if params[paramnames[i]]["current"]!=params[paramnames[i]]["current"]: # this catches NaN
-		params[paramnames[i]]["current"]=arams[paramnames[i]]["default"]
+		params[paramnames[i]]["current"]=params[paramnames[i]]["default"]
 		print("setting invalid %s default value"%paramnames[i])
 	print("%s is now %s"%(paramnames[i],"%E"%params[paramnames[i]]["current"]))
 	current.set(paramnames[i],"%E"%params[paramnames[i]]["current"])
