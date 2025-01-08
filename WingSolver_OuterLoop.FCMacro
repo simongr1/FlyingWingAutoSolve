@@ -3,7 +3,7 @@
 # Macro Begin: /home/eprice/.local/share/FreeCAD/Macro/WingSolver_OuterLoop.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
 import FreeCAD
 import FreeCADGui
-import emailForError
+import dependencies.emailForError as emailForError
 import os
 from CfdOF.Mesh import CfdMeshTools
 from CfdOF import CfdTools

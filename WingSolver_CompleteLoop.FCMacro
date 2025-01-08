@@ -13,7 +13,7 @@ import shutil
 import time
 from datetime import timedelta
 import traceback
-import emailForError
+import dependencies.emailForError as emailForError
 
 
 
@@ -59,7 +59,7 @@ try:
                 print("Could not copy file %s, %s"%(srcfile,str(e)))
     CfdTools.executeMacro(outerLoopMarcro)
     print("Finished complete loop")
-    
+
 except Exception as e:
     error_message = traceback.format_exc()
     emailForError.send_email("Error",error_message)
