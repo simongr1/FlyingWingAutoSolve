@@ -9,7 +9,7 @@ from CfdOF.Mesh import CfdMeshTools
 from CfdOF import CfdTools
 from CfdOF.Solve import CfdCaseWriterFoam
 import copy
-
+import WingSolver_dependencies.WingSolver_Dependencies as wng
 mydir = path.dirname(__file__)
 
 failcount=0
@@ -31,6 +31,9 @@ mass=FreeCAD.ActiveDocument.getObjectsByLabel("ComputedValues")[0]
 #get workingdir
 basedir=desc.cells["BaseDir"]
 workingdirbase=path.join(basedir,"workingdir")
+
+#reset workingdir
+wng.empty_directory(workingdirbase)
 
 meshsizes=desc.cells["MeshSizes"]
 
@@ -211,6 +214,7 @@ except:
 try:
 	CfdTools.runFoamCommand(command)
 except:
+	print(gradienttests)
 	print("failed - aborting")
 	raise Exception("parallel paraview call failed - please rerun on commandline and check for errors")
 print("analysis succeeded")
