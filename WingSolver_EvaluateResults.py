@@ -129,7 +129,7 @@ v_target=15
 #You also need to add a 1st iteration
 
 #Get subfolders and sort them
-working_dir= "/home/sgrimm/src/FlyingWing/results"
+working_dir= os.path.join(os.getcwd(),"results")
 
 
 #Create evaluation directories:
