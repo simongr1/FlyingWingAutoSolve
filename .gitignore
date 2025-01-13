@@ -6,3 +6,5 @@ workspace.py
 evaluation/
 password.txt
 __pycache__/
+WingSolver_CFDTest.py
+WingSolver_Test.py
