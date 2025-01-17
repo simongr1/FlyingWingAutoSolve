@@ -69,6 +69,7 @@ for param in params.values():
 					best=r
 			param["center"]=best
 			param["slope"]=3.*fit[0]*best**2 + 2*fit[1]*best + fit[2] # derivative
+		param["ZeroValue"]=fit[-1]
 		res.set(param["name"]+"Parameters","tuple"+str(tuple([ float(x) for x in fit ])))
 		#res.set(param["name"]+"Parameters","=tuple"+str(tuple(fit)))
 		res.set(param["name"]+"Center","%E"%param["center"]) #(root of the polynomial
@@ -90,13 +91,15 @@ drag_curve_poly=drag_curve(lift_coefficient,drag_coefficient)
 res.set("DragPolarParameters","tuple"+str(tuple([ float(x) for x in drag_curve_poly ])))
 
 
-#Cost Function 1
+#Cost Function 2
 #Calculate Costs 
 a,b,d=drag_curve_poly
 #Lift and drag
 c_a_bestendurance=(math.sqrt(12*a*d+b**2)+b)/2*a
 c_w_bestendurance=a*c_a_bestendurance**2+b*c_a_bestendurance+d
-c_g=mass_kg*GRAVITY_CONSTANT/(0.5*AIR_DENSITY*v_target**2*area_msq)
+Weigth_N=mass_kg*GRAVITY_CONSTANT
+c_g=Weigth_N/(0.5*AIR_DENSITY*v_target**2*area_msq)
+Lift_zero_N= params["LiftForce"]["ZeroValue"]
 
 #pitch stability
 #in trimmed position alpha=0
@@ -121,7 +124,8 @@ except:
 staticMargin= xPositionaAC_reverse_m/(meanChordLength_mm*1e-3)
 
 #Error calculation
-Lift_diff= (-1/(0.05*c_g)*(c_a_bestendurance-c_g))**2 #1% deviation allowed
+#Lift_diff= (-1/(0.05*c_g)*(c_a_bestendurance-c_g))**2 #5% deviation allowed
+Lift_diff= (-1/(0.05*Weigth_N)*(Lift_zero_N-Weigth_N))**2 #5% deviation allowed
 static_margin_diff=(-1/(0.1*staticMarginGoal)*(staticMargin-staticMarginGoal))**2 #10% devaition allowed
 pitch_torque_trimmed_diff=(0.5-pitch_torque_trimmed_fligth+1)**2 #when below 0.5Nm allowed
 #must be zero
@@ -129,7 +133,7 @@ Drag_diff=(c_w_bestendurance*1e3)**2
 
 
 cost=Lift_diff+static_margin_diff+pitch_torque_trimmed_diff+Drag_diff
-res.set("LiftGoal","%E"%c_g)
+res.set("LiftGoal","%E"%Weigth_N)
 res.set("DragGoal","%E"%0)
 res.set("StaticMarginGoal","%E"%staticMarginGoal)
 res.set("TrimGoal","%E"%0.5)
