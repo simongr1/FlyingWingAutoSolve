@@ -63,7 +63,7 @@ def total_to_coefficient(lift_or_drag, density, velocity, reference_area):
 	lift_or_drag_coefficient= Force/(0.5*density*velocity**2*reference_area)
 	return lift_or_drag_coefficient.tolist()
 
-def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label="Alpha[°]",y_label="Force [N]",hLine=None):
+def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label="Alpha[�]",y_label="Force [N]",hLines=None):
     #parameter_values: list of all alpha values
     fig, ax=plt.subplots()
     x= parameter_values
@@ -93,14 +93,14 @@ def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label=
     ax.set_ylabel(y_label)
     ax.grid(True)
 
-    if hLine is not None:
-         ax.axhline(y=hLine, color="r", linestyle="--")
-        #hier wird hline geplottet     
+    if isinstance(hLines, list):
+        for h_value in hLines:
+            ax.axhline(y=h_value, color="r", linestyle="--")   
    
     # Add the colorbar
     sm = cm.ScalarMappable(cmap=cmap, norm=norm)  # Scalar mappable for the colorbar
     sm.set_array([])  # Required for ScalarMappable
-    cbar = plt.colorbar(sm)
+    cbar = plt.colorbar(sm, ax=plt.gca())
     cbar.set_label('Number of iteration', rotation=270)
     #cbar.set_label("Iteration Number", fontsize=12)  # Label for the colorbar
 
@@ -256,9 +256,9 @@ for dir in dirs:
           cost[cost_names[i]].append(float(cost_values_squared[i]))
           diff[cost_names[i]].append(float(diff_values[i]))
     #extract Polynomial of Total functions
-    cells =rows_res[1][1:6] #The first cell contains the name of the row
+    cells =rows_res[1][1:7] #The first cell contains the name of the row
     polynomials=[extract_tupel(cell) for cell in cells] #extract the polynomial
-    LiftForce,DragForce,PitchTorque,RollTorque,YawTorque=polynomials
+    LiftForce,DragForce,PitchTorque,RollTorque,YawTorque,DragPolar=polynomials
 
     #extract costs
     TotalCost_value=float(rows_res[33][-1])
