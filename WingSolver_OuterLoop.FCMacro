@@ -4,6 +4,7 @@
 import FreeCAD
 import FreeCADGui
 import WingSolver_dependencies.emailForError as emailForError
+import WingSolver_dependencies.Macro_Dependencies as md
 import os
 from CfdOF.Mesh import CfdMeshTools
 from CfdOF import CfdTools
@@ -69,6 +70,7 @@ while keepgoing:
 	CfdTools.executeMacro(calcGradientMacro)
 
 	print("Collecting results:")
+	md.spreadsheet_to_csv(sstate,os.path.join(resultdirbase,"sstate.csv"))
 	outputfoldername=os.path.join(resultdirbase,str(iterations))
 	for p in ("0",)+paramnames:
 		subfolder=os.path.join(outputfoldername,p)
