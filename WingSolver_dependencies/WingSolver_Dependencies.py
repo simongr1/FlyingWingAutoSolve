@@ -67,8 +67,10 @@ def read_csv(csv_path):
         rows = list(reader)        # Convert the reader object to a list
     return rows
 
-def extract_data(working_dir):
-    dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))and d.isdigit()]
+def extract_data(working_dir,ignore_numbers=[]):
+    #ignore_numbers: you can add some number you want to skip in the data (e.g. faulty data)
+    # example ignore_numbers=["8"]
+    dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))and d.isdigit() and d  not in ignore_numbers]
     dirs=sorted(dirs,key=int)
 
     # Create Empty parameter dictionary {'WingArea': [], 'WingSweepAngleLE': [], 'AspectRatio': [], 'TaperRatio': [], 'RootIncidence': [], 'WingTwist': [], 'DihedralAngle': []}
