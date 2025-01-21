@@ -82,7 +82,7 @@ def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label=
     ax.axvline(x=0, color='black', linewidth=2)
 
 
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True, prune='both', numticks=10))  # numticks controls the number of ticks
+    #ax.yaxis.set_major_locator(MaxNLocator(integer=True, prune='both', numticks=10))  # numticks controls the number of ticks
     #plot all iterations
     for iteration in range(0,number_of_iterations,fraction_of_iterations):
         poly = y_polys[iteration]  # Generate data for plot
@@ -129,8 +129,7 @@ v_target=15
 #You also need to add a 1st iteration
 
 #Get subfolders and sort them
-working_dir= os.path.join(os.getcwd(),"results")
-
+working_dir= "/home/simongr/Downloads/Archive/20250120_results/results"
 
 #Create evaluation directories:
 # List of directories to check
@@ -278,7 +277,7 @@ for dir in dirs:
     current_iteration +=1
 
 
-figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations, hLine=mass["TotalMass"][-1]*9.81)
+figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations, hLines=[mass["TotalMass"][-1]*9.81])
 figDragForce=plot_function(results["alpha"],results["data"]["DragForce"],iterations,name="DragForce")
 figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],iterations,name="PitchTorque")
 figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque",x_label="Beta [°]", y_label="Torque [Nm]")
