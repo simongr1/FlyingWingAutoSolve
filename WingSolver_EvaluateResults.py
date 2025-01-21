@@ -83,6 +83,7 @@ def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label=
 
 
     #ax.yaxis.set_major_locator(MaxNLocator(integer=True, prune='both', numticks=10))  # numticks controls the number of ticks
+    #ax.yaxis.set_major_locator(MaxNLocator(integer=True, prune='both', numticks=10))  # numticks controls the number of ticks
     #plot all iterations
     for iteration in range(0,number_of_iterations,fraction_of_iterations):
         poly = y_polys[iteration]  # Generate data for plot
@@ -142,141 +143,145 @@ for directory in directories:
         os.makedirs(directory)
         print(f"Created directory: {directory}")
    
+def extract_data(working_dir):
+    dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))and d.isdigit()]
+    dirs=sorted(dirs,key=int)
 
-dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))and d.isdigit()]
-dirs=sorted(dirs,key=int)
+    # Create Empty parameter dictionary {'WingArea': [], 'WingSweepAngleLE': [], 'AspectRatio': [], 'TaperRatio': [], 'RootIncidence': [], 'WingTwist': [], 'DihedralAngle': []}
+    # e.g. wing area contains the values for all iterations 
+    #get parameter names:
+    param_names_path= os.path.join(working_dir,dirs[0],"0","parameters.csv")
+    param_names=pd.read_csv(param_names_path, usecols=[0,1], header=None)
+    param_names=param_names[0].to_list()
 
-# Create Empty parameter dictionary {'WingArea': [], 'WingSweepAngleLE': [], 'AspectRatio': [], 'TaperRatio': [], 'RootIncidence': [], 'WingTwist': [], 'DihedralAngle': []}
-# e.g. wing area contains the values for all iterations 
-#get parameter names:
-param_names_path= os.path.join(working_dir,dirs[0],"0","parameters.csv")
-param_names=pd.read_csv(param_names_path, usecols=[0,1], header=None)
-param_names=param_names[0].to_list()
-
-#read parameter
-parameter={}
-for i in range(len(param_names)):
-      parameter[param_names[i]]=[]  
-
-geometry_names_path= os.path.join(working_dir,dirs[0],"0","geometry.csv")
-geometry_names=pd.read_csv(geometry_names_path, usecols=[3,4],header=None,skiprows=1)
-geometry_names= geometry_names.dropna()
-geometry_names=geometry_names[3].to_list()
-
-geometry={}
-for i in range(len(geometry_names)):
-      geometry[geometry_names[i]]=[]  
-
-mass_names_path= os.path.join(working_dir,dirs[0],"0","mass.csv")
-mass_names=pd.read_csv(mass_names_path, usecols=[0,1],header=None,skiprows=1)
-mass_names= mass_names.dropna()
-mass_names=mass_names[0].to_list()
-mass={}
-for i in range(len(mass_names)):
-      mass[mass_names[i]]=[] 
-
-cost_names_path= os.path.join(working_dir,dirs[0],"0","result.csv")
-cost_names=pd.read_csv(cost_names_path, usecols=[0,1],header=None,skiprows=29)
-cost_names= cost_names.dropna()
-cost_names=cost_names[0].to_list()
-cost={}
-for i in range(len(cost_names)):
-      cost[cost_names[i]]=[] 
-diff=copy.deepcopy(cost)
-#Results
-iterations=len(dirs)
-names_alpha=["LiftForce","DragForce","PitchTorque"]
-names_beta=["RollTorque","YawTorque"]
-names_iterations=["TotalCost"]
-alpha=range(-20,20,1)
-beta=range(-20,20,1)
-
-LiftForcePoly=[]
-DragForcePoly=[]
-PitchTorquePoly=[]
-RollTorquePoly=[]
-YawTorquePoly=[]
-DragPolarPoly=[] 
-TotalCost=[]
-
-target_values_lift=[]
-current_values_lift=[]
-data={"LiftForce":LiftForcePoly,"DragForce":DragForcePoly,
-                  "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolarPoly, "TotalCost":TotalCost}
-results={"names_alpha":names_alpha,"names_beta":names_beta,"alpha":alpha,"beta":beta,"data":data}
-
-current_iteration=0
-for dir in dirs:
-    #read files
-    path=os.path.join(working_dir,dir,"0")
-    path_res= os.path.join(path,"result.csv")
-    path_parameter=os.path.join(path,"parameters.csv")
-    path_raw=os.path.join(path,"rawresult.csv")
-    path_geometry=os.path.join(path,"geometry.csv")
-    path_mass=os.path.join(path,"mass.csv")
-    rows_res=read_csv(path_res)
-
-    #read Parameter
-    
-    # Open the CSV file for paramter
-    params=pd.read_csv(path_parameter, usecols=[0,1], header=None)
-    params_values=params[1].to_list()
-    #Add parameters
+    #read parameter
+    parameter={}
     for i in range(len(param_names)):
-          parameter[param_names[i]].append(float(params_values[i]))
-    
-    #Open CSV file for geometry
-    geometry_values=pd.read_csv(path_geometry, usecols=[3,4], header=None, skiprows=1)
-    geometry_values=geometry_values.dropna()
-    geometry_values=geometry_values[4].to_list()
-    #Add values
+        parameter[param_names[i]]=[]  
+
+    geometry_names_path= os.path.join(working_dir,dirs[0],"0","geometry.csv")
+    geometry_names=pd.read_csv(geometry_names_path, usecols=[3,4],header=None,skiprows=1)
+    geometry_names= geometry_names.dropna()
+    geometry_names=geometry_names[3].to_list()
+
+    geometry={}
     for i in range(len(geometry_names)):
-          geometry[geometry_names[i]].append(float(geometry_values[i]))
+        geometry[geometry_names[i]]=[]  
 
-    #Open CSV file for mass
-    mass_values=pd.read_csv(path_mass, usecols=[0,1], header=None, skiprows=1)
-    mass_values=mass_values.dropna()
-    mass_values=mass_values[1].to_list()
-    #Add values
+    mass_names_path= os.path.join(working_dir,dirs[0],"0","mass.csv")
+    mass_names=pd.read_csv(mass_names_path, usecols=[0,1],header=None,skiprows=1)
+    mass_names= mass_names.dropna()
+    mass_names=mass_names[0].to_list()
+    mass={}
     for i in range(len(mass_names)):
-          mass[mass_names[i]].append(float(mass_values[i]))
+        mass[mass_names[i]]=[] 
 
-    #Open CSV file for cost
-    cost_values=pd.read_csv(path_res, usecols=[1,2,3,7], header=None, skiprows=29)
-    cost_values=cost_values.dropna()
-    cost_values_squared=cost_values[7].to_list()
-    diff_values=cost_values[3].tolist()
-    target_values=cost_values[1].tolist()
-    current_values=cost_values[2].tolist()
-    target_values_lift.append(target_values[0])
-    current_values_lift.append(current_values[0])
-    #Add values
+    cost_names_path= os.path.join(working_dir,dirs[0],"0","result.csv")
+    cost_names=pd.read_csv(cost_names_path, usecols=[0,1],header=None,skiprows=29)
+    cost_names= cost_names.dropna()
+    cost_names=cost_names[0].to_list()
+    cost={}
     for i in range(len(cost_names)):
-          cost[cost_names[i]].append(float(cost_values_squared[i]))
-          diff[cost_names[i]].append(float(diff_values[i]))
-    #extract Polynomial of Total functions
-    cells =rows_res[1][1:7] #The first cell contains the name of the row
-    polynomials=[extract_tupel(cell) for cell in cells] #extract the polynomial
-    LiftForce,DragForce,PitchTorque,RollTorque,YawTorque,DragPolar=polynomials
+        cost[cost_names[i]]=[] 
+    diff=copy.deepcopy(cost)
+    #Results
+    iterations=len(dirs)
+    names_alpha=["LiftForce","DragForce","PitchTorque"]
+    names_beta=["RollTorque","YawTorque"]
+    names_iterations=["TotalCost"]
+    alpha=range(-20,20,1)
+    beta=range(-20,20,1)
 
-    #extract costs
-    TotalCost_value=float(rows_res[33][-1])
-    
-    #determine drag_polar
-    DragPolar=[0]
-    #ToDo import drag polar from results
+    LiftForcePoly=[]
+    DragForcePoly=[]
+    PitchTorquePoly=[]
+    RollTorquePoly=[]
+    YawTorquePoly=[]
+    DragPolarPoly=[] 
+    TotalCost=[]
 
-    LiftForcePoly.append(LiftForce)
-    DragForcePoly.append(DragForce)
-    PitchTorquePoly.append(PitchTorque)
-    RollTorquePoly.append(RollTorque)
-    YawTorquePoly.append(YawTorque)
-    TotalCost.append(TotalCost_value)
-    DragPolarPoly.append(DragPolar)
+    target_values_lift=[]
+    current_values_lift=[]
+    data={"LiftForce":LiftForcePoly,"DragForce":DragForcePoly,
+                    "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolarPoly, "TotalCost":TotalCost}
+    results={"names_alpha":names_alpha,"names_beta":names_beta,"alpha":alpha,"beta":beta,"data":data}
 
-    current_iteration +=1
+    current_iteration=0
+    for dir in dirs:
+        #read files
+        path=os.path.join(working_dir,dir,"0")
+        path_res= os.path.join(path,"result.csv")
+        path_parameter=os.path.join(path,"parameters.csv")
+        path_raw=os.path.join(path,"rawresult.csv")
+        path_geometry=os.path.join(path,"geometry.csv")
+        path_mass=os.path.join(path,"mass.csv")
+        rows_res=read_csv(path_res)
 
+        #read Parameter
+        
+        # Open the CSV file for paramter
+        params=pd.read_csv(path_parameter, usecols=[0,1], header=None)
+        params_values=params[1].to_list()
+        #Add parameters
+        for i in range(len(param_names)):
+            parameter[param_names[i]].append(float(params_values[i]))
+        
+        #Open CSV file for geometry
+        geometry_values=pd.read_csv(path_geometry, usecols=[3,4], header=None, skiprows=1)
+        geometry_values=geometry_values.dropna()
+        geometry_values=geometry_values[4].to_list()
+        #Add values
+        for i in range(len(geometry_names)):
+            geometry[geometry_names[i]].append(float(geometry_values[i]))
 
+        #Open CSV file for mass
+        mass_values=pd.read_csv(path_mass, usecols=[0,1], header=None, skiprows=1)
+        mass_values=mass_values.dropna()
+        mass_values=mass_values[1].to_list()
+        #Add values
+        for i in range(len(mass_names)):
+            mass[mass_names[i]].append(float(mass_values[i]))
+
+        #Open CSV file for cost
+        cost_values=pd.read_csv(path_res, usecols=[1,2,3,7], header=None, skiprows=29)
+        cost_values=cost_values.dropna()
+        cost_values_squared=cost_values[7].to_list()
+        diff_values=cost_values[3].tolist()
+        target_values=cost_values[1].tolist()
+        current_values=cost_values[2].tolist()
+        target_values_lift.append(target_values[0])
+        current_values_lift.append(current_values[0])
+        #Add values
+        for i in range(len(cost_names)):
+            cost[cost_names[i]].append(float(cost_values_squared[i]))
+            diff[cost_names[i]].append(float(diff_values[i]))
+        #extract Polynomial of Total functions
+        cells =rows_res[1][1:7] #The first cell contains the name of the row
+        polynomials=[extract_tupel(cell) for cell in cells] #extract the polynomial
+        LiftForce,DragForce,PitchTorque,RollTorque,YawTorque,DragPolar=polynomials
+
+        #extract costs
+        TotalCost_value=float(rows_res[33][-1])
+        
+        #determine drag_polar
+        DragPolar=[0]
+        #ToDo import drag polar from results
+
+        LiftForcePoly.append(LiftForce)
+        DragForcePoly.append(DragForce)
+        PitchTorquePoly.append(PitchTorque)
+        RollTorquePoly.append(RollTorque)
+        YawTorquePoly.append(YawTorque)
+        TotalCost.append(TotalCost_value)
+        DragPolarPoly.append(DragPolar)
+
+        current_iteration +=1
+
+    return results, parameter, mass, cost,diff, iterations
+
+results, parameter, mass, cost, diff, iterations = extract_data(working_dir)
+
+figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations, hLines=[mass["TotalMass"][-1]*9.81])
 figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations, hLines=[mass["TotalMass"][-1]*9.81])
 figDragForce=plot_function(results["alpha"],results["data"]["DragForce"],iterations,name="DragForce")
 figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],iterations,name="PitchTorque")
