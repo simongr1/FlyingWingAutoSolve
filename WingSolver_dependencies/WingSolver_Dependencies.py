@@ -108,6 +108,15 @@ def extract_data(working_dir):
     for i in range(len(cost_names)):
         cost[cost_names[i]]=[] 
     diff=copy.deepcopy(cost)
+
+    #read raw data:
+    alphaRaw=[]
+    betaRaw=[]
+    LiftForceRaw=[]
+    DragForceRaw=[]
+    PitchTorqueRaw=[]
+    RollTorqueRaw=[]
+    YawTorqueRaw=[]
     #Results
     iterations=len(dirs)
     names_alpha=["LiftForce","DragForce","PitchTorque"]
@@ -127,7 +136,8 @@ def extract_data(working_dir):
     target_values_lift=[]
     current_values_lift=[]
     data={"LiftForce":LiftForcePoly,"DragForce":DragForcePoly,
-                    "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolarPoly, "TotalCost":TotalCost}
+                    "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolarPoly, "TotalCost":TotalCost,
+                    "alphaRaw":alphaRaw,"betaRaw":betaRaw,"LiftForceRaw":LiftForceRaw,"DragForceRaw":DragForceRaw,"PitchTorqueRaw":PitchTorqueRaw,"RollTorqueRaw":RollTorqueRaw,"YawTorqueRaw":YawTorqueRaw}
     results={"names_alpha":names_alpha,"names_beta":names_beta,"alpha":alpha,"beta":beta,"data":data}
 
     current_iteration=0
@@ -187,9 +197,6 @@ def extract_data(working_dir):
         #extract costs
         TotalCost_value=float(rows_res[33][-1])
         
-        #determine drag_polar
-        DragPolar=[0]
-        #ToDo import drag polar from results
 
         LiftForcePoly.append(LiftForce)
         DragForcePoly.append(DragForce)
@@ -199,9 +206,18 @@ def extract_data(working_dir):
         TotalCost.append(TotalCost_value)
         DragPolarPoly.append(DragPolar)
 
+        #open rawresults.csv
+        rawresults=pd.read_csv(path_raw,usecols=[0,2,9,10,11,19,20],header=None, skiprows=1)
+        LiftForceRaw.append(rawresults[2].to_list())
+        DragForceRaw.append(rawresults[0].to_list())
+        PitchTorqueRaw.append(rawresults[10].to_list())
+        RollTorqueRaw.append(rawresults[9].to_list())
+        YawTorqueRaw.append(rawresults[11].to_list())
+        alphaRaw.append(rawresults[19].to_list())
+        betaRaw.append(rawresults[20].to_list())
         current_iteration +=1
 
-    return results, parameter, mass, cost,diff, iterations
+    return results, parameter, mass, cost,diff, iterations,
 
 if __name__=="__main__":
     main()
