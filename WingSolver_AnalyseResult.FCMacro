@@ -50,8 +50,20 @@ for i in range(len(paramnames)):
 
 for param in params.values():
 	if param["ref"] in paramnames:
-		param["refdata"]=params[param["ref"]]["data"]
-		fit=np.polyfit(param["refdata"],param["data"],param["rank"])
+		
+		if param["name"]=="PitchTorque":
+			#special case for pitch torque. We only want the zero value and two more on each side.
+			#The first point is from the raw data is ignored
+			middle_index=4 #the 4th(index) point is on y axis
+			width_index=2 #additional 2 points on each side
+			left_index= middle_index-width_index
+			rigth_index= middle_index+width_index+1
+			param["refdata"]=params[param["ref"]]["data"]
+			fit=np.polyfit(param["refdata"][left_index:rigth_index],param["data"][left_index:rigth_index],param["rank"])
+			
+		else:
+			param["refdata"]=params[param["ref"]]["data"]
+			fit=np.polyfit(param["refdata"],param["data"],param["rank"])
 		param["center"]=0
 		param["slope"]=1.0
 		if (param["rank"]==1): # its a line - get slope and zero point crossing
