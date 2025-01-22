@@ -70,6 +70,8 @@ def read_csv(csv_path):
 def extract_data(working_dir,ignore_numbers=[]):
     #ignore_numbers: you can add some number you want to skip in the data (e.g. faulty data)
     # example ignore_numbers=["8"]
+    Astart, Aend= 0,9
+    Bstart, Bend= 10,20
     dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))and d.isdigit() and d  not in ignore_numbers]
     dirs=sorted(dirs,key=int)
 
@@ -210,13 +212,13 @@ def extract_data(working_dir,ignore_numbers=[]):
 
         #open rawresults.csv
         rawresults=pd.read_csv(path_raw,usecols=[0,2,9,10,11,19,20],header=None, skiprows=1)
-        LiftForceRaw.append(rawresults[2].to_list())
-        DragForceRaw.append(rawresults[0].to_list())
-        PitchTorqueRaw.append(rawresults[10].to_list())
-        RollTorqueRaw.append(rawresults[9].to_list())
-        YawTorqueRaw.append(rawresults[11].to_list())
-        alphaRaw.append(rawresults[19].to_list())
-        betaRaw.append(rawresults[20].to_list())
+        LiftForceRaw.append(rawresults.loc[Astart:Aend,2].to_list())
+        DragForceRaw.append(rawresults.loc[Astart:Aend,0].to_list())
+        PitchTorqueRaw.append(rawresults.loc[Astart:Aend,10].to_list())
+        RollTorqueRaw.append(rawresults.loc[Bstart:Bend,9].to_list())
+        YawTorqueRaw.append(rawresults.loc[Bstart:Bend,11].to_list())
+        alphaRaw.append(rawresults.loc[Astart:Aend,19].to_list())
+        betaRaw.append(rawresults.loc[Bstart:Bend,20].to_list())
         current_iteration +=1
 
     return results, parameter, mass, cost,diff, iterations,
