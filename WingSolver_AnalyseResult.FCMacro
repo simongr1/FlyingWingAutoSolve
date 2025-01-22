@@ -8,31 +8,8 @@ import numpy as np
 import scipy as sp
 import math
 import re
+import WingSolver_dependencies.WingSolver_Dependencies as wd
 
-def quadratic(x,a,b,c):
-	return a* x**2 +b* x+ c
-def drag_curve(lift_coefficient, drag_coeffcient):
-	#c_w(c_a)=a*c_a²+b*c_a+d
-	initial_guess = [1, -1, 1]
-	bounds = ([0, -np.inf, 0], [np.inf, 0, np.inf])
-	if len(lift_coefficient) != len(drag_coeffcient):
-		return 0
-	params, _ = sp.optimize.curve_fit(quadratic, lift_coefficient, drag_coeffcient, p0=initial_guess, bounds=bounds)
-	#a,b,d= np.polyfit(lift_coefficient,drag_coeffcient,2)
-	a,b,d= params
-	return [a,b,d]
-def total_to_coefficient(lift_or_drag, density, velocity, reference_area):
-	Force= np.array(lift_or_drag)
-	lift_or_drag_coefficient= Force/(0.5*density*velocity**2*reference_area)
-	return lift_or_drag_coefficient.tolist()
-def extract_tupel(cell_content):
-    #cell_content = "tuple(-0.0876859194475919; -0.390034184491187; -3.2973569606838)"
-    # Extract numbers using a regular expression
-    numbers = re.findall(r"-?\d+\.\d+", cell_content)  # Matches decimal numbers, including negatives
-
-    # Convert the strings to floats
-    numbers = [float(num) for num in numbers]
-    return numbers #extracted list
 
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ResultDescription")[0]
 raw=FreeCAD.ActiveDocument.getObjectsByLabel("RawResultData")[0]
@@ -97,9 +74,9 @@ area_msq=geometry.get("WingArea")*1e-6
 mass_kg=computed.get("TotalMass")
 lift_force_N=params["LiftForce"]["data"]
 drag_force_N=[-x for x in params["DragForce"]["data"]]
-lift_coefficient=total_to_coefficient(lift_force_N,AIR_DENSITY,velocity,area_msq)
-drag_coefficient=total_to_coefficient(drag_force_N,AIR_DENSITY,velocity,area_msq)
-drag_curve_poly=drag_curve(lift_coefficient,drag_coefficient)
+lift_coefficient=wd.total_to_coefficient(lift_force_N,AIR_DENSITY,velocity,area_msq)
+drag_coefficient=wd.total_to_coefficient(drag_force_N,AIR_DENSITY,velocity,area_msq)
+drag_curve_poly=wd.drag_curve(lift_coefficient,drag_coefficient)
 res.set("DragPolarParameters","tuple"+str(tuple([ float(x) for x in drag_curve_poly ])))
 
 
@@ -122,12 +99,12 @@ TaperRatio=geometry.get("TaperRatio")
 RootChord=geometry.get("RootChord")
 meanChordLength_mm=2/3*RootChord*(1+TaperRatio+TaperRatio**2)/(1+TaperRatio)
 alphaZeroLift=params["LiftForce"]["center"]
-pitch_torque_AC=np.polyval(extract_tupel(res.get("PitchTorqueParameters")),alphaZeroLift) #evalute pitch torque at zero lift angle
+pitch_torque_AC=np.polyval(wd.extract_tupel(res.get("PitchTorqueParameters")),alphaZeroLift) #evalute pitch torque at zero lift angle
 
 try:
 	#catch possible division by zero
-	liftForcePoly=extract_tupel(res.get("LiftForce"))
-	pitchTorquePoly=extract_tupel(res.get("PitchTorque"))
+	liftForcePoly=wd.extract_tupel(res.get("LiftForce"))
+	pitchTorquePoly=wd.extract_tupel(res.get("PitchTorque"))
 	xPositionaAC_reverse_m=(pitchTorquePoly[-1]-pitch_torque_AC)/liftForcePoly[-1] #calculate ac position for alpha=0
 except: 
 	i=int(len(lift_force_N)/2) #take middle value
