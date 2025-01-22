@@ -14,7 +14,7 @@ import WingSolver_Dependencies as wd
 """You can change the PolyKey and the reference Key to switch between differnet results like LiftForce, DragForce, PitchTorque, RollTorque, YawTorque.
 If you want to plot anything else iteration by iteration you have to change the 4 Variables in Input (e.g to cA and cD)"""
 
-path="/home/simongr/Downloads/Archive/20250120_results/results"
+path="/home/sgrimm/Archive/20250117_results/results"
 PolyKey= "PitchTorque"
 ReferenceKey= "alpha"
 
@@ -59,6 +59,8 @@ ax.legend()
 ax.set_title(f"Plot Iteration: {current_index_iteration + 1} for {PolyKey}")
 ax.axhline(0, color='black', linewidth=0.8)  # Horizontal axis
 ax.axvline(0, color='black', linewidth=0.8)  # Vertical axis
+#ax.set_xlabel("Alpha[°]")
+#ax.set_ylabel("Torque [Nm]")
 ax.grid(True)
 
 # Set consistent axis limits
