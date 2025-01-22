@@ -109,7 +109,7 @@ figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],ite
 figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque",x_label="Beta [°]", y_label="Torque [Nm]")
 figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque",x_label="Beta [°]", y_label="Torque [Nm]")
 figCosts=plotOverIterations(results["data"]["TotalCost"])
-figCosts.savefig("./evaluation/TotalCost.png")
+figCosts.savefig(os.path.join(working_dir,"evaluation/TotalCost.png"))
 plots={"figLiftForce":figLiftForce,"figDragForce":figDragForce,"figPitchTorque":figPitchTorque,"figYawTorque":figYawTorque,"figRollTorque":figRollTorque}
 #save plots
 for key in plots:
