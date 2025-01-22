@@ -70,8 +70,8 @@ def read_csv(csv_path):
 def extract_data(working_dir,ignore_numbers=[]):
     #ignore_numbers: you can add some number you want to skip in the data (e.g. faulty data)
     # example ignore_numbers=["8"]
-    Astart, Aend= 0,9
-    Bstart, Bend= 10,20
+    Astart, Aend= 1,9 #the first is ignored
+    Bstart, Bend= 11,20 #(the first is ignored)
     dirs = [d for d in os.listdir(working_dir) if os.path.isdir(os.path.join(working_dir, d))and d.isdigit() and d  not in ignore_numbers]
     dirs=sorted(dirs,key=int)
 

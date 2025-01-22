@@ -15,15 +15,9 @@ import WingSolver_Dependencies as wd
 If you want to plot anything else iteration by iteration you have to change the 4 Variables in Input (e.g to cA and cD)"""
 
 path="/home/sgrimm/Archive/20250117_results/results"
-PolyKey= "YawTorque"
-ReferenceKey= "beta"
+PolyKey= "PitchTorque"
+ReferenceKey= "alpha"
 
-if ReferenceKey == "alpha":
-    start, end = 0,9
-elif ReferenceKey == "beta":
-    start, end = 10,20
-else:
-    print("Error for reference slicing")
 
 
 results, parameter, mass, cost,diff, iterations = wd.extract_data(path,ignore_numbers=[])
@@ -32,8 +26,8 @@ results, parameter, mass, cost,diff, iterations = wd.extract_data(path,ignore_nu
 #Input
 CurrentPolys= results["data"][PolyKey]
 PolyReference=results[ReferenceKey]
-CurrentAllPoints= [inner_list[start:end] for inner_list in results["data"][PolyKey+"Raw"]]
-PointsReference = [inner_list[start: end] for inner_list in results["data"][ReferenceKey+"Raw"]]
+CurrentAllPoints= [inner_list for inner_list in results["data"][PolyKey+"Raw"]]
+PointsReference = [inner_list for inner_list in results["data"][ReferenceKey+"Raw"]]
 
 datasets={}
 for i, poly in enumerate(CurrentPolys):
