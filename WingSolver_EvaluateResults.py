@@ -83,7 +83,7 @@ v_target=15
 #You also need to add a 1st iteration
 
 #Get subfolders and sort them
-working_dir= "/home/simongr/Downloads/Archive/20250120_results/"
+working_dir= "/home/sgrimm/Archive/20250120_results/"
 results_path=os.path.join(working_dir,"results")
 #Create evaluation directories:
 # List of directories to check
@@ -109,7 +109,7 @@ figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],ite
 figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque",x_label="Beta [°]", y_label="Torque [Nm]")
 figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque",x_label="Beta [°]", y_label="Torque [Nm]")
 figCosts=plotOverIterations(results["data"]["TotalCost"])
-figCosts.savefig("./evaluation/TotalCost.png")
+figCosts.savefig(os.path.join(working_dir,"evaluation/TotalCost.png"))
 plots={"figLiftForce":figLiftForce,"figDragForce":figDragForce,"figPitchTorque":figPitchTorque,"figYawTorque":figYawTorque,"figRollTorque":figRollTorque}
 #save plots
 for key in plots:
@@ -132,5 +132,11 @@ plt.close("all")
 print(f"Read from: {working_dir}")
 print(f"Used parameter: {parameter.keys()}")
 print(f"CostTerms: {cost.keys()}")
+finalcost= results["data"]["TotalCost"][-1]
+staticmargin  =cost["StaticMargin"][-1]
+liftcost= cost["Lift"][-1]
+dragcost=cost["Drag"] [-1]
+trimcost=cost["Trim"][-1]
+print(f"FinalCost:{finalcost} \nStaticMargin cost: {staticmargin}\nLift cost: {liftcost}\nDrag cost: {dragcost}\nTrim cost: {trimcost}")
 
 
