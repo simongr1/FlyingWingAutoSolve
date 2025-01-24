@@ -6,6 +6,7 @@ import copy
 import csv
 import pandas as pd
 import re
+import math
 
 def empty_directory(directory):
     try:
@@ -223,5 +224,10 @@ def extract_data(working_dir,ignore_numbers=[]):
 
     return results, parameter, mass, cost,diff, iterations,
 
+def cA_cD_bestendurance(dragPoly):
+    a,b,d = dragPoly
+    cA_bestendurance=(math.sqrt(12*a*d+b**2)+b)/2*a
+    cD_bestendurance=a*cA_bestendurance**2+b*cA_bestendurance+d
+    return  cA_bestendurance, cD_bestendurance
 if __name__=="__main__":
     main()

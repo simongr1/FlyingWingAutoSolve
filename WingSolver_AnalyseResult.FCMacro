@@ -82,10 +82,9 @@ res.set("DragPolarParameters","tuple"+str(tuple([ float(x) for x in drag_curve_p
 
 #Cost Function 2
 #Calculate Costs 
-a,b,d=drag_curve_poly
 #Lift and drag
-c_a_bestendurance=(math.sqrt(12*a*d+b**2)+b)/2*a
-c_w_bestendurance=a*c_a_bestendurance**2+b*c_a_bestendurance+d
+c_a_bestendurance, c_w_bestendurance= wd.cA_cD_bestendurance(drag_curve_poly)
+
 Weigth_N=mass_kg*GRAVITY_CONSTANT
 c_g=Weigth_N/(0.5*AIR_DENSITY*v_target**2*area_msq)
 Lift_zero_N= params["LiftForce"]["ZeroValue"]
