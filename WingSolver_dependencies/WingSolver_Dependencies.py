@@ -122,6 +122,8 @@ def extract_data(working_dir,ignore_numbers=[]):
     PitchTorqueRaw=[]
     RollTorqueRaw=[]
     YawTorqueRaw=[]
+    cD=[]
+    cL=[]
     #Results
     iterations=len(dirs)
     names_alpha=["LiftForce","DragForce","PitchTorque"]
@@ -142,7 +144,7 @@ def extract_data(working_dir,ignore_numbers=[]):
     current_values_lift=[]
     data={"LiftForce":LiftForcePoly,"DragForce":DragForcePoly,
                     "PitchTorque":PitchTorquePoly,"RollTorque":RollTorquePoly,"YawTorque":YawTorquePoly,"DragPolar":DragPolarPoly, "TotalCost":TotalCost,
-                    "alphaRaw":alphaRaw,"betaRaw":betaRaw,"LiftForceRaw":LiftForceRaw,"DragForceRaw":DragForceRaw,"PitchTorqueRaw":PitchTorqueRaw,"RollTorqueRaw":RollTorqueRaw,"YawTorqueRaw":YawTorqueRaw}
+                    "alphaRaw":alphaRaw,"betaRaw":betaRaw,"LiftForceRaw":LiftForceRaw,"DragForceRaw":DragForceRaw,"PitchTorqueRaw":PitchTorqueRaw,"RollTorqueRaw":RollTorqueRaw,"YawTorqueRaw":YawTorqueRaw,"cL":cL,"cD":cD}
     results={"names_alpha":names_alpha,"names_beta":names_beta,"alpha":alpha,"beta":beta,"data":data}
 
     current_iteration=0
@@ -212,7 +214,7 @@ def extract_data(working_dir,ignore_numbers=[]):
         DragPolarPoly.append(DragPolar)
 
         #open rawresults.csv
-        rawresults=pd.read_csv(path_raw,usecols=[0,2,9,10,11,19,20],header=None, skiprows=1)
+        rawresults=pd.read_csv(path_raw,usecols=[0,2,9,10,11,19,20,21,22],header=None, skiprows=1)
         LiftForceRaw.append(rawresults.loc[Astart:Aend,2].to_list())
         DragForceRaw.append(rawresults.loc[Astart:Aend,0].to_list())
         PitchTorqueRaw.append(rawresults.loc[Astart:Aend,10].to_list())
@@ -220,14 +222,16 @@ def extract_data(working_dir,ignore_numbers=[]):
         YawTorqueRaw.append(rawresults.loc[Bstart:Bend,11].to_list())
         alphaRaw.append(rawresults.loc[Astart:Aend,19].to_list())
         betaRaw.append(rawresults.loc[Bstart:Bend,20].to_list())
+        cD.append(rawresults.loc[Astart:Aend,21].to_list())
+        cL.append(rawresults.loc[Astart:Aend,22].to_list())
         current_iteration +=1
 
     return results, parameter, mass, cost,diff, iterations,
 
-def cA_cD_bestendurance(dragPoly):
+def cL_cD_bestendurance(dragPoly):
     a,b,d = dragPoly
-    cA_bestendurance=(math.sqrt(12*a*d+b**2)+b)/2*a
-    cD_bestendurance=a*cA_bestendurance**2+b*cA_bestendurance+d
-    return  cA_bestendurance, cD_bestendurance
+    cL_bestendurance=(math.sqrt(12*a*d+b**2)+b)/2*a
+    cD_bestendurance=a*cL_bestendurance**2+b*cL_bestendurance+d
+    return  cL_bestendurance, cD_bestendurance
 if __name__=="__main__":
     main()

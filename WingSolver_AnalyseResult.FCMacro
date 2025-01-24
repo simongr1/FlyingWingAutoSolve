@@ -83,7 +83,7 @@ res.set("DragPolarParameters","tuple"+str(tuple([ float(x) for x in drag_curve_p
 #Cost Function 2
 #Calculate Costs 
 #Lift and drag
-c_a_bestendurance, c_w_bestendurance= wd.cA_cD_bestendurance(drag_curve_poly)
+c_L_bestendurance, c_D_bestendurance= wd.cL_cD_bestendurance(drag_curve_poly)
 
 Weigth_N=mass_kg*GRAVITY_CONSTANT
 c_g=Weigth_N/(0.5*AIR_DENSITY*v_target**2*area_msq)
@@ -117,7 +117,7 @@ Lift_diff= (-1/(0.05*Weigth_N)*(Lift_zero_N-Weigth_N))**2 #5% deviation allowed
 static_margin_diff=(-1/(0.1*staticMarginGoal)*(staticMargin-staticMarginGoal))**2 #10% devaition allowed
 pitch_torque_trimmed_diff=(0.5-pitch_torque_trimmed_fligth+1)**2 #when below 0.5Nm allowed
 #must be zero
-Drag_diff=(c_w_bestendurance*1e3)**2
+Drag_diff=(c_D_bestendurance*1e3)**2
 
 
 cost=Lift_diff+static_margin_diff+pitch_torque_trimmed_diff+Drag_diff
@@ -126,7 +126,7 @@ res.set("DragGoal","%E"%0)
 res.set("StaticMarginGoal","%E"%staticMarginGoal)
 res.set("TrimGoal","%E"%0.5)
 res.set("LiftCurrent","%E"%Lift_zero_N)
-res.set("DragCurrent","%E"%c_w_bestendurance)
+res.set("DragCurrent","%E"%c_D_bestendurance)
 res.set("StaticMarginCurrent","%E"%staticMargin)
 res.set("TrimCurrent","%E"%pitch_torque_trimmed_fligth)
 res.set("LiftCost","%E"%Lift_diff)
