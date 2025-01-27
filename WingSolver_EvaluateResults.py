@@ -89,6 +89,13 @@ results_path=os.path.join(working_dir,"results")
 # List of directories to check
 directories = ["evaluation/cost", "evaluation/parameter"]
 
+# Extract the date using a regular expression
+match = re.search(r"\d{8}", working_dir)
+if match:
+    date = match.group()
+else:
+    print("No date found")
+
 for directory in directories:
     # Check if the directory exists
     joined_directory = os.path.join(working_dir,directory)
@@ -102,13 +109,12 @@ for directory in directories:
 
 results, parameter, mass, cost, diff, iterations = wd.extract_data(results_path)
 
-figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations, hLines=[mass["TotalMass"][-1]*9.81])
-figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations, hLines=[mass["TotalMass"][-1]*9.81])
-figDragForce=plot_function(results["alpha"],results["data"]["DragForce"],iterations,name="DragForce")
-figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],iterations,name="PitchTorque")
-figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque",x_label="Beta [°]", y_label="Torque [Nm]")
-figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque",x_label="Beta [°]", y_label="Torque [Nm]")
-figCosts=plotOverIterations(results["data"]["TotalCost"])
+figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations,name="LiftForce " +date, hLines=[mass["TotalMass"][-1]*9.81])
+figDragForce=plot_function(results["alpha"],results["data"]["DragForce"],iterations,name="DragForce "+date)
+figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],iterations,name="PitchTorque "+ date)
+figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque "+date,x_label="Beta [°]", y_label="Torque [Nm]")
+figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque "+date,x_label="Beta [°]", y_label="Torque [Nm]")
+figCosts=plotOverIterations(results["data"]["TotalCost"], name="TotalCost "+date)
 figCosts.savefig(os.path.join(working_dir,"evaluation/TotalCost.png"))
 plots={"figLiftForce":figLiftForce,"figDragForce":figDragForce,"figPitchTorque":figPitchTorque,"figYawTorque":figYawTorque,"figRollTorque":figRollTorque}
 #save plots
@@ -117,14 +123,14 @@ for key in plots:
 plt.close("all")
 parameterPlots={}
 for parameterName in parameter:
-    parameterPlots[parameterName]=plotOverIterations(parameter[parameterName],name=parameterName,y_label=parameterName)
+    parameterPlots[parameterName]=plotOverIterations(parameter[parameterName],name=parameterName+" "+date,y_label=parameterName)
     parameterPlots[parameterName].savefig(os.path.join(working_dir,f"evaluation/parameter/{parameterName}.png"))
     #Die Einheiten sind noch nicht im plot
 for costterm in cost:
-     plot=plotOverIterations(cost[costterm], name=costterm, y_label=costterm)
+     plot=plotOverIterations(cost[costterm], name=costterm + " "+date, y_label=costterm)
      plot.savefig(os.path.join(working_dir,f"evaluation/cost/cost_{costterm}.png"))
 for costterm in cost:
-     plot=plotOverIterations(diff[costterm], name=f"diff {costterm}", y_label="difference to goal")
+     plot=plotOverIterations(diff[costterm], name=f"diff {costterm} {date}", y_label="difference to goal")
      plot.savefig(os.path.join(working_dir,f"evaluation/cost/diff_{costterm}.png"))
 plt.close("all")
 
