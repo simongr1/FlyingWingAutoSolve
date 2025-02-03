@@ -29,7 +29,7 @@ CurrentAllPoints= results["data"][PolyKey+"Raw"]
 PointsReference = results["data"][ReferenceKey+"Raw"]"""
 
 #the points from the ca/cd approx
-density=1
+density=1.2
 velocity=10
 try:
 	reference_area=parameter["WingArea"]
@@ -61,8 +61,8 @@ for i, poly in enumerate(DragPolarApprox):
 datasets_Noapprox={}
 for i, poly in enumerate(DragPolartrue):
     values=wd.calculate_function(PolyReference,poly)
-    points_x=np.array(True_cL[i])
-    points_y= np.array(True_cD[i])
+    points_x=np.array(True_cL[i])/(reference_area[i]*1e-6)
+    points_y= np.array(True_cD[i])/(reference_area[i]*1e-6)
     points= [points_x,points_y]
     bestcL,bestcD=wd.cL_cD_bestendurance(poly)
     point_best=[bestcL,bestcD]
@@ -80,7 +80,7 @@ current_index_dataset = 0
 # Create a figure and axis
 fig, ax = plt.subplots()
 line_approx, = ax.plot(PolyReference,datasets_approx[current_index_iteration][1], label=f"Approximation with wingArea", c="g")
-points_approx, = ax.plot(datasets_approx[current_index_iteration][0][0],datasets_approx[current_index_iteration][0][1],"go", label=f"Dataset(approx with wingarea")
+points_approx, = ax.plot(datasets_approx[current_index_iteration][0][0],datasets_approx[current_index_iteration][0][1],"gx", label=f"Dataset(approx with wingarea")
 best_approx, = ax.plot(datasets_approx[current_index_iteration][2][0],datasets_approx[current_index_iteration][2][1],"ro", label=f"best endurance(approx with wingarea")
 
 line_true, = ax.plot(PolyReference,datasets_Noapprox[current_index_iteration][1], label=f"Approximation with paraview", c="b")

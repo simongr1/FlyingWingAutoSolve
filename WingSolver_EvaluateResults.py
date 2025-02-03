@@ -75,7 +75,7 @@ def plotOverIterations(y_values,name="Cost",x_label="Iterations",y_label="Cost",
     return fig
 
 #########Constants#######
-density=1
+density=1.2
 g=9.81
 velocity=10
 v_target=15
