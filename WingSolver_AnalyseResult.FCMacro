@@ -47,7 +47,7 @@ for param in params.values():
 			param["center"]=-fit[1]/fit[0]
 			param["slope"]=fit[0]
 		elif (param["rank"]==2): # this is for drag - get the point of minimum drag and how quickly it increases
-			param["center"]=-fit[1]/(2*fit[0])
+			param["center"]=-fit[1]/(2*fit[0]) #vertex of parabola
 			param["slope"]=2*fit[0]
 		elif (param["rank"]==3): # this is for lift - a sine wave
 			roots=np.roots(fit)
@@ -73,7 +73,7 @@ v_target=velocity
 area_msq=geometry.get("WingArea")*1e-6
 mass_kg=computed.get("TotalMass")
 lift_force_N=params["LiftForce"]["data"]
-drag_force_N=[-x for x in params["DragForce"]["data"]]
+drag_force_N=params["DragForce"]["data"]
 lift_coefficient=wd.total_to_coefficient(lift_force_N,AIR_DENSITY,velocity,area_msq)
 drag_coefficient=wd.total_to_coefficient(drag_force_N,AIR_DENSITY,velocity,area_msq)
 drag_curve_poly=wd.drag_curve(lift_coefficient,drag_coefficient)

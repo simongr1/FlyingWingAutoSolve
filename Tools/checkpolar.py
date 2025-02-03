@@ -52,7 +52,7 @@ datasets_approx={}
 for i, poly in enumerate(DragPolarApprox):
     values=wd.calculate_function(PolyReference,poly)
     points_x=np.array(CurrentAllPointscA_calc[i])
-    points_y= -1* np.array(CurrentAllPointscD_calc[i])
+    points_y=np.array(CurrentAllPointscD_calc[i])
     points= [points_x,points_y]
     bestcL,bestcD=wd.cL_cD_bestendurance(poly)
     point_best=[bestcL,bestcD]
