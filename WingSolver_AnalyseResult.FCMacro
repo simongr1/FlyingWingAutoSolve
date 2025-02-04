@@ -116,13 +116,13 @@ staticMargin= xPositionaAC_reverse_m/(meanChordLength_mm*1e-3)
 
 #Error calculation
 #Lift_diff= (-1/(0.05*c_g)*(c_a_bestendurance-c_g))**2 #5% deviation allowed
-Lift_diff= (-1/(0.05*Weigth_N)*(Lift_zero_N-Weigth_N))**2 #5% deviation allowed
+Lift_diff= (-1/(0.01*Weigth_N)*(Lift_zero_N-Weigth_N))**2 #5% deviation allowed
 static_margin_diff=(-1/(0.1*staticMarginGoal)*(staticMargin-staticMarginGoal))**2 #10% devaition allowed
 pitch_torque_trimmed_diff=(0.5-pitch_torque_trimmed_fligth+1)**2 #when below 0.5Nm allowed
 #must be zero
 Drag_diff=(Drag_zero_N*3)**2 #~1.8N -> 3.5N times two increase the error
 
-
+Drag_diff=0 #only optimize for the other results
 cost=Lift_diff+static_margin_diff+pitch_torque_trimmed_diff+Drag_diff
 res.set("LiftGoal","%E"%Weigth_N)
 res.set("DragGoal","%E"%0)
