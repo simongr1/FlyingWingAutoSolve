@@ -142,4 +142,3 @@ res.set("TotalCost","%E"%cost)
 
 FreeCAD.ActiveDocument.recompute()
 
-print(static_margin_diff)
