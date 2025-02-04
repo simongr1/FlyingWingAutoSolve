@@ -103,12 +103,14 @@ pitch_torque_AC=np.polyval(wd.extract_tupel(res.get("PitchTorqueParameters")),al
 
 try:
 	#catch possible division by zero
-	liftForcePoly=wd.extract_tupel(res.get("LiftForce"))
-	pitchTorquePoly=wd.extract_tupel(res.get("PitchTorque"))
-	xPositionaAC_reverse_m=(pitchTorquePoly[-1]-pitch_torque_AC)/liftForcePoly[-1] #calculate ac position for alpha=0
+	liftForcePoly=wd.extract_tupel(res.get("LiftForceParameters"))
+	pitchTorquePoly=wd.extract_tupel(res.get("PitchTorqueParameters"))
+	xPositionaAC_reverse_m=(pitch_torque_AC-pitchTorquePoly[-1])/liftForcePoly[-1] #calculate ac position for alpha=0
+	
 except: 
+	print("division by zero, use different point for stability calculation")
 	i=int(len(lift_force_N)/2) #take middle value
-	xPositionaAC_reverse_m=(params["PitchTorque"]["data"][i]-pitch_torque_AC)/lift_force_N[i]
+	xPositionaAC_reverse_m=(pitch_torque_AC-params["PitchTorque"]["data"][i])/lift_force_N[i]
 
 staticMargin= xPositionaAC_reverse_m/(meanChordLength_mm*1e-3)
 
@@ -139,3 +141,5 @@ res.set("TotalCost","%E"%cost)
 
 
 FreeCAD.ActiveDocument.recompute()
+
+print(static_margin_diff)
