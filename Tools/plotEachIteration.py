@@ -14,12 +14,12 @@ import WingSolver_Dependencies as wd
 """You can change the PolyKey and the reference Key to switch between differnet results like LiftForce, DragForce, PitchTorque, RollTorque, YawTorque.
 If you want to plot anything else iteration by iteration you have to change the 4 Variables in Input (e.g to cA and cD)"""
 
-path="/home/sgrimm/Archive/20250117_results/results"
+path="/home/sgrimm/Archive/20241220_results"
 PolyKey= "PitchTorque"
 ReferenceKey= "alpha"
 
 
-
+path=os.path.join(path,"results")
 results, parameter, mass, cost,diff, iterations = wd.extract_data(path,ignore_numbers=[])
 
     
