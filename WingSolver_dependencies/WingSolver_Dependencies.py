@@ -7,6 +7,7 @@ import csv
 import pandas as pd
 import re
 import math
+import ast
 
 def empty_directory(directory):
     try:
@@ -233,5 +234,18 @@ def cL_cD_bestendurance(dragPoly):
     cL_bestendurance=(math.sqrt(12*a*d+b**2)+b)/2*a
     cD_bestendurance=a*cL_bestendurance**2+b*cL_bestendurance+d
     return  cL_bestendurance, cD_bestendurance
+def get_gradients(path):
+    #path="/home/sgrimm/Archive/20250204_results/sstate.csv"
+    path_sstate=os.path.join(path,"sstate.csv")
+    df= pd.read_csv(path_sstate,header=None, usecols=[2])
+    magnitudes = []
+    for vec in df[2]:
+        try:
+            gradient=np.linalg.norm(np.array(ast.literal_eval(vec))) # remove the surrounding ()
+            magnitudes.append(gradient)
+        except:
+            #for the last word just pass
+            pass
+    return magnitudes[::-1] #start at first gradient
 if __name__=="__main__":
     main()
