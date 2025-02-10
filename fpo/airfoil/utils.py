@@ -73,9 +73,7 @@ def getcoordsfromBPO(func,u_upper,u_lower):
     return coords 
 
 def define_airfoil(coords,scale):
-    scale=100
     spline=Part.BSplineCurve()
-    
     spline.interpolate(coords)
     wire=Part.Wire(spline.toShape())
     face= Part.Face(wire)

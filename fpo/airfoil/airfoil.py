@@ -62,7 +62,7 @@ class airfoil():
         u_thickness=np.array(obj.ThicknessParameterList)
         u_upper=u_camber+u_thickness
         u_lower=u_camber-u_thickness
-        obj.Shape= process(obj.ChordLength,u_upper,u_lower)
+        obj.Shape= process(obj.ChordLength.Value,u_upper,u_lower)
 
 class ViewProviderBox:
 
