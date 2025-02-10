@@ -4,6 +4,7 @@ import numpy as np
 from .utils import process
 
 """
+https://wiki.freecad.org/Create_a_FeaturePython_object_part_I
 Like this you can add an object to a part:
 import FreeCAD as App
 
@@ -12,8 +13,10 @@ part = App.ActiveDocument.addObject("App::Part", "Part")
 
 obj1 = App.ActiveDocument.addObject("PartDesign::Body", "Body")
 obj2 = App.ActiveDocument.addObject("Part::Box", "Box")
+part_root=App.ActiveDocument.getObjectsByLabel("RootProfile")[0]
+part_tip=App.ActiveDocument.getObjectsByLabel("TipProfile")[0]
 
-part.addObjects([obj1, obj2])
+part_root.addObjects()
 App.ActiveDocument.recompute()
 
 usage:
@@ -95,7 +98,7 @@ class ViewProviderBox:
         """
         Return the name of the default display mode. It must be defined in getDisplayModes.
         """
-        return "Shaded"
+        return "FlatLines"
 
     def setDisplayMode(self,mode):
         """
