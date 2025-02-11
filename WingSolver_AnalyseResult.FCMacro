@@ -116,9 +116,9 @@ staticMargin= xPositionaAC_reverse_m/(meanChordLength_mm*1e-3)
 
 #Error calculation
 drag_weight=0
-SM_weight=3
+SM_weight=1
 trim_weight=1
-lift_weight=1
+lift_weight=0
 #Lift_diff= (-1/(0.05*c_g)*(c_a_bestendurance-c_g))**2 #5% deviation allowed
 Lift_diff = lift_weight * (-1/(0.01*Weigth_N)*(Lift_zero_N-Weigth_N))**2 #5% deviation allowed
 static_margin_diff = SM_weight * (-1/(0.1*staticMarginGoal)*(staticMargin-staticMarginGoal))**2 #10% devaition allowed
