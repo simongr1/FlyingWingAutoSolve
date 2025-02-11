@@ -1,6 +1,8 @@
 import FreeCAD,FreeCADGui,Part,re
 from FreeCAD import Base
 
+#Credit to FredsFactory/FreeCAD_AirPlaneDesign on Github for soem of the code
+
 def readpointsonfile(filename):
     # The common airfoil dat format has many flavors, This code should work with almost every dialect,
     # Regex to identify data rows and throw away unused metadata
@@ -73,10 +75,22 @@ def getcoordsfromBPO(func,u_upper,u_lower):
     return coords 
 
 def define_airfoil(coords,scale):
-    spline=Part.BSplineCurve()
-    spline.interpolate(coords)
-    wire=Part.Wire(spline.toShape())
+    
+
+    if coords.__contains__(FreeCAD.Vector(0,0,0)): # lgtm[py/modification-of-default-value]
+        flippoint = coords.index(FreeCAD.Vector(0,0,0))
+    else:
+        lengthList=[v.Length for v in coords]
+        flippoint = lengthList.index(min(lengthList))
+    splineLower = Part.BSplineCurve()
+    splineUpper = Part.BSplineCurve()
+    splineUpper.interpolate(coords[:flippoint+1])
+    splineLower.interpolate(coords[flippoint:])
+
+  
+    wire=Part.Wire([splineUpper.toShape(),splineLower.toShape()])
     face= Part.Face(wire)
+  
 
 
     myScale = Base.Matrix() # issue31
