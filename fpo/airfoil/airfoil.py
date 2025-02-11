@@ -56,6 +56,8 @@ class airfoil():
         obj.addProperty('App::PropertyLength', 'ChordLength', 'Dimensions', 'Chord length').ChordLength=100
         obj.addProperty('App::PropertyFloatList', 'ThicknessParameterList', 'Special', "Thickness").ThicknessParameterList=[0.15023359, 0.17078099, 0.12732937, 0.14198486]
         obj.addProperty('App::PropertyFloatList', 'CamberParameterList', 'Special', "Camber").CamberParameterList=[ 0.07497288,  0.18129897, -0.00487776,  0.07436278]
+        obj.addProperty("App::PropertyVectorList","Coordinates","Special","Vector list that defines the airfoil's geometry").Coordinates=[]    
+    
     def execute(self, obj):
         """
         Called on document recompute
@@ -65,7 +67,7 @@ class airfoil():
         u_thickness=np.array(obj.ThicknessParameterList)
         u_upper=u_camber+u_thickness
         u_lower=u_camber-u_thickness
-        obj.Shape= process(obj.ChordLength.Value,u_upper,u_lower)
+        obj.Shape,obj.Coordinates= process(obj.ChordLength.Value,u_upper,u_lower)
 
 class ViewProviderBox:
 

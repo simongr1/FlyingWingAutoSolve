@@ -104,5 +104,5 @@ def process(scale,u_upper,u_lower):
     #coords=readpointsonfile(filename)
 
     face= define_airfoil(coords,scale)
-    return face
+    return face,coords
 
