@@ -1,5 +1,6 @@
 workingdir/
 results/
+old_scrips/
 test.py
 workspace.py
 mull.py
