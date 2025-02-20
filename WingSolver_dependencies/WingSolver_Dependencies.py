@@ -247,5 +247,50 @@ def get_gradients(path):
             #for the last word just pass
             pass
     return magnitudes[::-1] #start at first gradient
+
+def update_velocity(file_path, speed_magnitude, output_path):
+    # Datei einlesen
+    with open(file_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+    
+    # Regul�rer Ausdruck f�r Geschwindigkeitsvektoren
+    pattern = re.compile(r'\(\s*(\d+)\s*\(\s*([-\d\.]+)\s+([-\d\.]+)\s+([-\d\.]+)\s*\)\s*\)')
+    internal_field_pattern = re.compile(r'internalField\s+uniform\s*\(\s*([-\d\.]+)\s+([-\d\.]+)\s+([-\d\.]+)\s*\);')
+    
+    new_lines = []
+    
+    for line in lines:
+        match = pattern.search(line)
+        if match:
+            # Extrahieren der Werte
+            timestamp = match.group(1)
+            vx, vy, vz = map(float, match.groups()[1:])
+            
+            # Richtung des Vektors beibehalten, aber neue Magnitude setzen
+            old_magnitude = np.linalg.norm([vx, vy, vz])
+            if old_magnitude > 0:
+                scale = speed_magnitude / old_magnitude
+                vx, vy, vz = vx * scale, vy * scale, vz * scale
+            
+            # Winkelberechnung mit arctan
+            if vy==0:
+
+                angle = -np.arctan(vz/ vx) * 180 / np.pi
+            elif vz==0:
+                angle = -np.arctan(vy/ vx) * 180 / np.pi
+            # Neue Zeile mit aktualisierten Werten und Winkelkommentar
+            new_line = f'    ( {timestamp} ( {vx:.3f} {vy:.3f} {vz:.3f} ) ) // {angle:.0f} degrees\n'
+            new_lines.append(new_line)
+        elif internal_field_pattern.search(line):
+            # Aktualisieren der internen Feldgeschwindigkeit
+            new_line = f'internalField   uniform ({-speed_magnitude:.3f} 0.0 0.0);\n'
+            new_lines.append(new_line)
+        else:
+            new_lines.append(line)
+    
+    # Datei mit den aktualisierten Werten speichern
+    with open(output_path, 'w', encoding='utf-8') as file:
+        file.writelines(new_lines)
+        
 if __name__=="__main__":
     main()
