@@ -77,13 +77,11 @@ def plotOverIterations(y_values,name="Cost",x_label="Iterations",y_label="Cost",
 #########Constants#######
 density=1.2
 g=9.81
-velocity=10
-v_target=15
 
 #You also need to add a 1st iteration
 
 #Get subfolders and sort them
-working_dir= "/home/sgrimm/Archive/20250120_results/"
+working_dir= "/home/sgrimm/Archive/20250219_results/"
 results_path=os.path.join(working_dir,"results")
 #Create evaluation directories:
 # List of directories to check
