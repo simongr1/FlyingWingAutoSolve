@@ -16,6 +16,7 @@ failcount=0
 meshsize=0
 
 analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
+optimizeVelocityMacro=path.join(mydir, "WingSolver_OptimizeVelocity.FCMacro")
 
 #load spreadsheets
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
@@ -277,6 +278,7 @@ sstate.set("E1","=tuple("+'; '.join((i for i in costcorelation.values()))+")")
 sstate.set("F1","=tuple("+'; '.join((i for i in cost2corelation.values()))+")")
 sstate.set("G1",str(meshsizes[meshsize]))
 
+
 sstate.recompute()
 FreeCAD.ActiveDocument.recompute()
 try:
@@ -295,6 +297,9 @@ except:
     pass
 CfdTools.executeMacro(analyseCSVMacro)	  #run the analysis macro - calculates cost
 
+#now all costs have bee n calculated, we can change the velocity to the optimal velocity (we are in the "0" configuration)
+print("optimizing velocity")
+CfdTools.executeMacro(optimizeVelocityMacro)
 print("saving main documents")
 FreeCAD.ActiveDocument.save()
 

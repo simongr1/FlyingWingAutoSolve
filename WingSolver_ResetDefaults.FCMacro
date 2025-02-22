@@ -8,6 +8,7 @@ from CfdOF.Mesh import CfdMeshTools
 from CfdOF import CfdTools
 from CfdOF.Solve import CfdCaseWriterFoam
 import copy
+import WingSolver_dependencies.WingSolver_Dependencies as wd 
 
 mydir = path.dirname(__file__)
 
@@ -16,6 +17,8 @@ analyseCSVMacro=path.join(mydir, 'WingSolver_AnalyseResult.FCMacro')
 desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
 current=FreeCAD.ActiveDocument.getObjectsByLabel("CurrentParameter")[0]
 scontrol=FreeCAD.ActiveDocument.getObjectsByLabel("SolverControl")[0]
+geometry=FreeCAD.ActiveDocument.getObjectsByLabel("WingGeometry")[0]
+current=FreeCAD.ActiveDocument.getObjectsByLabel("CurrentParameter")[0]
 
 basedir=desc.cells["BaseDir"]
 workingdirbase=path.join(basedir,"workingdir")
@@ -39,6 +42,12 @@ current.set("WorkingDir",workingdirbase)
 for pn in params:
 	print("Setting %s to %s"%(pn,"%E"%params[pn]["default"]))
 	current.set(pn,"%E"%params[pn]["default"])
+
+#reset U file
+velocity= desc.get("Velocity")
+wd.update_velocity(path.join(mydir,"U_template"),velocity,path.join(mydir,"U"))
+current.set("Velocity","%f"%velocity)
+print(f"U-file reset to {velocity} m/s")
 
 current.recompute()
 for obj in FreeCAD.ActiveDocument.Objects:

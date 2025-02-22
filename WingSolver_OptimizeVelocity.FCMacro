@@ -1,0 +1,54 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /home/eprice/.local/share/FreeCAD/Macro/WingSolver_AnalyseResult.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+
+
+import numpy as np
+import scipy as sp
+import math
+import re
+import WingSolver_dependencies.WingSolver_Dependencies as wd
+import WingSolver_dependencies.costfunction as fcost
+from scipy.optimize import minimize
+from os import path
+
+
+
+
+res=FreeCAD.ActiveDocument.getObjectsByLabel("ResultData")[0]
+computed=FreeCAD.ActiveDocument.getObjectsByLabel("ComputedValues")[0]
+current=FreeCAD.ActiveDocument.getObjectsByLabel("CurrentParameter")[0]
+desc=FreeCAD.ActiveDocument.getObjectsByLabel("ParameterDescription")[0]
+
+mydir = path.dirname(__file__)
+#get required values
+
+velocity=current.get("Velocity")
+
+mass_kg=computed.get("TotalMass")
+
+
+pitch_torque_trimmed_fligth=res.get("PitchTorqueZeroValue") # must be zero
+Lift_zero_N=res.get("LiftForceZeroValue")
+trim_weight=1
+lift_weight=1
+
+
+
+
+#calculate optimal velocity
+lower=desc.get("VelocityLowerBound")
+upper=desc.get("VelocityUpperBound")
+bounds=[(lower**2,upper**2)]
+optimal=minimize(fcost.f_velocity_min,args=(velocity,pitch_torque_trimmed_fligth,Lift_zero_N,mass_kg,trim_weight,lift_weight),x0=velocity**2,method="L-BFGS-B",bounds=bounds)
+
+optimal_velocity=np.sqrt(optimal.x)[0]
+
+#change velocity value
+print(f"optimal velocity {optimal_velocity} m/s")
+current.set("Velocity","%f"%optimal_velocity)
+wd.update_velocity(path.join(mydir,"U_template"),optimal_velocity,path.join(mydir,"U"))
+print(f"Velocity changed to {velocity} m/s")
+FreeCAD.ActiveDocument.recompute()
+
