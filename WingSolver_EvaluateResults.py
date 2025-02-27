@@ -81,7 +81,7 @@ g=9.81
 #You also need to add a 1st iteration
 
 #Get subfolders and sort them
-working_dir= "/home/sgrimm/Archive/20250219_results/"
+working_dir= "/home/sgrimm/Archive/20250224_results/"
 results_path=os.path.join(working_dir,"results")
 #Create evaluation directories:
 # List of directories to check
@@ -139,8 +139,8 @@ print(f"CostTerms: {cost.keys()}")
 finalcost= results["data"]["TotalCost"][-1]
 staticmargin  =cost["StaticMargin"][-1]
 liftcost= cost["Lift"][-1]
-dragcost=cost["Drag"] [-1]
+power=cost["Power"] [-1]
 trimcost=cost["Trim"][-1]
-print(f"FinalCost:{finalcost} \nStaticMargin cost: {staticmargin}\nLift cost: {liftcost}\nDrag cost: {dragcost}\nTrim cost: {trimcost}")
+print(f"FinalCost:{finalcost} \nStaticMargin cost: {staticmargin}\nLift cost: {liftcost}\nPower cost: {power}\nTrim cost: {trimcost}")
 
 

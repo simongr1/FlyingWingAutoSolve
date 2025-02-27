@@ -114,35 +114,43 @@ except:
 staticMargin= xPositionaAC_reverse_m/(meanChordLength_mm*1e-3)
 
 #Error calculation
-drag_weight=0
-SM_weight=1
-trim_weight=1
-lift_weight=1
-Lift_diff=fcost.lift_cost(1,1,lift_weight,Lift_zero_N,mass_kg)
+#set weights
+weights={'SM':1,'trim':1,'lift':1,'power':1}
+total=sum(weights.values())
+weights={key: value/total for key, value in weights.items()}
+SM_weight=weights["SM"]
+trim_weight=weights["trim"]
+lift_weight=weights["lift"]
+power_weight=weights["power"]
 
-static_margin_diff= fcost.static_margin_cost(SM_weight,staticMarginGoal,staticMargin)
+Lift_cost=fcost.lift_cost(1,1,lift_weight,Lift_zero_N,mass_kg)
 
-pitch_torque_trimmed_diff = fcost.trim_cost(1,1,trim_weight,pitch_torque_trimmed_fligth)
+static_margin_cost= fcost.static_margin_cost(SM_weight,staticMarginGoal,staticMargin)
+
+pitch_torque_trimmed_cost = fcost.trim_cost(1,1,trim_weight,pitch_torque_trimmed_fligth)
+powerBattery= 29.48 # in watt
+power_cost= fcost.power_cost(velocity**2,velocity,power_weight,powerBattery,Drag_zero_N)
+powerRequired=Drag_zero_N*velocity
 #must be zero
 
-Drag_diff = fcost.drag_cost(1,1,drag_weight,Drag_zero_N)
 
-cost=Lift_diff+static_margin_diff+pitch_torque_trimmed_diff+Drag_diff
+
+cost=Lift_cost+static_margin_cost+pitch_torque_trimmed_cost+power_cost
 res.set("LiftGoal","%E"%Weigth_N)
-res.set("DragGoal","%E"%0)
+res.set("PowerGoal","%E"%powerBattery)
 res.set("StaticMarginGoal","%E"%staticMarginGoal)
 res.set("TrimGoal","%E"%0.5)
 res.set("LiftCurrent","%E"%Lift_zero_N)
-res.set("DragCurrent","%E"%Drag_zero_N)
+res.set("PowerCurrent","%E"%powerRequired)
 res.set("StaticMarginCurrent","%E"%staticMargin)
 res.set("TrimCurrent","%E"%pitch_torque_trimmed_fligth)
-res.set("LiftCost","%E"%Lift_diff)
-res.set("DragCost","%E"%Drag_diff)
-res.set("StaticMarginCost","%E"%static_margin_diff)
-res.set("TrimCost","%E"%pitch_torque_trimmed_diff)
+res.set("LiftCost","%E"%Lift_cost)
+res.set("PowerCost","%E"%power_cost)
+res.set("StaticMarginCost","%E"%static_margin_cost)
+res.set("TrimCost","%E"%pitch_torque_trimmed_cost)
 
 res.set("TotalCost","%E"%cost)
 
-print(cost)
+print(power_cost)
 FreeCAD.ActiveDocument.recompute()
 
