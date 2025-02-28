@@ -50,7 +50,8 @@ upper=desc.get("VelocityUpperBound")
 bounds=[(lower**2,upper**2)]
 optimal=minimize(fcost.f_velocity_min,args=(velocity,pitch_torque_trimmed_fligth,Lift_zero_N,Drag_zero_N,mass_kg,powerBattery,trim_weight,lift_weight,power_weight),x0=velocity**2,method="L-BFGS-B",bounds=bounds)
 optimal_velocity=np.sqrt(optimal.x)[0]
-
+#add dampening
+optimal_velocity=velocity + 0.7*(optimal_velocity-velocity)
 #change velocity value
 print(f"optimal velocity {optimal_velocity} m/s")
 current.set("Velocity","%f"%optimal_velocity)
