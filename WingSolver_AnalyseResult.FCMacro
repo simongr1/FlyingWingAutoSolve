@@ -116,8 +116,6 @@ staticMargin= xPositionaAC_reverse_m/(meanChordLength_mm*1e-3)
 #Error calculation
 #set weights
 weights={'SM':1,'trim':1,'lift':1,'power':1}
-total=sum(weights.values())
-weights={key: value/total for key, value in weights.items()}
 SM_weight=weights["SM"]
 trim_weight=weights["trim"]
 lift_weight=weights["lift"]
@@ -151,6 +149,7 @@ res.set("TrimCost","%E"%pitch_torque_trimmed_cost)
 
 res.set("TotalCost","%E"%cost)
 
-print(power_cost)
+
 FreeCAD.ActiveDocument.recompute()
+
 
