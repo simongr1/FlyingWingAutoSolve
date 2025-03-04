@@ -1,4 +1,5 @@
-import FreeCAD,FreeCADGui,Part,re
+import FreeCAD,FreeCADGui,Part,re,math
+import numpy as np
 from FreeCAD import Base
 
 #Credit to FredsFactory/FreeCAD_AirPlaneDesign on Github for soem of the code
@@ -45,6 +46,11 @@ def BPO03(x,u):
 def BPO05(x,u):
     u1,u2,u3,u4,u5,u6=u
     return u1*x**0.5*(1-x)**6 + 5*u2*x**1.5*(1-x)**5+10*u3*x**2.5*(1-x)**4+10*u4*x**3.5*(1-x)**3+5*u5*x**4.5*(1-x)**2+u6*x**5.5*(1-x)  # Change this function as needed
+def PARSEC2(theta,B,T,P,C,E,R):
+    #theta [0,2pi]
+    x=0.5+0.5* abs(math.cos(theta))**B / math.cos(theta)
+    y=T/2 * abs(math.sin(theta))**B / math.sin(theta) * (1-x**P) + C* math.sin(x**E *math.pi) + R * math.sin(x*2*math.pi)
+    return x, y
 
 def getcoordsfromBPO(func,u_upper,u_lower):
     x_points= [
@@ -74,9 +80,27 @@ def getcoordsfromBPO(func,u_upper,u_lower):
 
     return coords 
 
+def getcoordsfromPARSEC(parameter):
+    B,T,P,C,E,R=parameter
+    theta = np.linspace(+1e-3,math.pi-1e-3, 100)
+    theta2= np.linspace(math.pi+1e-3, 2*math.pi-1e-3,100)
+    theta=np.append(theta,theta2)
+    X=[]
+    Y=[]
+    coords=[]
+    for th in theta:
+    
+        x_PARSEC,z_PARSEC= PARSEC2(th,B,T,P,C,E,R)
+        coords.append(FreeCAD.Vector(x_PARSEC,0,z_PARSEC))
+    
+    return coords
+
+
+
+
 def define_airfoil(coords,scale):
     
-
+    print(coords)
     if coords.__contains__(FreeCAD.Vector(0,0,0)): # lgtm[py/modification-of-default-value]
         flippoint = coords.index(FreeCAD.Vector(0,0,0))
     else:
@@ -105,4 +129,10 @@ def process(scale,u_upper,u_lower):
 
     face= define_airfoil(coords,scale)
     return face,coords
+
+def processPARSEC(scale,parameter):
+    coords=getcoordsfromPARSEC(parameter)
+    face= define_airfoil(coords,scale)
+    return face, coords
+
 

@@ -1,7 +1,7 @@
 import FreeCAD as App
 import Part
 import numpy as np
-from .utils import process
+from .utils import process,processPARSEC
 
 """
 https://wiki.freecad.org/Create_a_FeaturePython_object_part_I
@@ -38,6 +38,18 @@ def create(obj_name):
     App.ActiveDocument.recompute()
     return obj
 
+def createPARSEC(obj_name):
+    """
+    Object creation method
+    """
+
+    obj = App.ActiveDocument.addObject('Part::FeaturePython', obj_name)
+
+    parsec(obj)
+    ViewProviderBox(obj.ViewObject)
+    App.ActiveDocument.recompute()
+    return obj
+
 class airfoil():
 
     def __init__(self, obj):
@@ -69,6 +81,32 @@ class airfoil():
         u_lower=u_camber-u_thickness
         obj.Shape,obj.Coordinates= process(obj.ChordLength.Value,u_upper,u_lower)
 
+class parsec():
+
+    def __init__(self, obj):
+        """
+        Default constructor
+        """
+
+        self.Type = 'parsec'
+
+        obj.Proxy = self
+        obj.addProperty('App::PropertyString', 'Description', 'Base', 'Box description').Description = "Custom airfoil using Bernstein polynomials. Currently camber controll"
+        obj.addProperty('App::PropertyFloat', 'B', 'Parameter', 'Function parameter').B=2
+        obj.addProperty('App::PropertyFloat', 'T', 'Parameter', 'Function parameter').T=0.1
+        obj.addProperty('App::PropertyFloat', 'P', 'Parameter', 'Function parameter').P=1
+        obj.addProperty('App::PropertyFloat', 'C', 'Parameter', 'Function parameter').C=0.05
+        obj.addProperty('App::PropertyFloat', 'E', 'Parameter', 'Function parameter').E=1
+        obj.addProperty('App::PropertyFloat', 'R', 'Parameter', 'Function parameter').R=0
+        obj.addProperty('App::PropertyLength', 'ChordLength', 'Dimensions', 'Chord length').ChordLength=100
+        obj.addProperty("App::PropertyVectorList","Coordinates","Special","Vector list that defines the airfoil's geometry").Coordinates=[]    
+    
+    def execute(self, obj):
+        """
+        Called on document recompute
+        """
+        parameter=np.array([obj.B,obj.T,obj.P,obj.C,obj.E,obj.R])
+        obj.Shape,obj.Coordinates= processPARSEC(obj.ChordLength.Value,parameter)
 class ViewProviderBox:
 
     def __init__(self, obj):
