@@ -3,7 +3,10 @@ def lift_cost(v_sqrd,v_old,lift_weight, L0,mass):
     return lift_weight*(-1/(0.05* mass*9.81)*(L0*v_sqrd/(v_old**2) - mass*9.81))**2
 def trim_cost(v_sqrd,v_old,trim_weight,M0):
     #set v_sqrd and v_old to one if you just wnat to calculate the current cost
-    return trim_weight*(3*M0*v_sqrd/(v_old**2))**2
+    if M0 <0:
+        return 2*(2*6*M0)**2
+    else:
+        return trim_weight*(3*M0*v_sqrd/(v_old**2))**2
 def power_cost(v_sqrd,v_old,power_weight,powerBattery,D0):
     powerRequired=D0*v_sqrd**(3/2) / (v_old**2)
     print(powerRequired)
