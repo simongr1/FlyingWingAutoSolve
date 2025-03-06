@@ -65,7 +65,7 @@ for param in params.values():
 		res.set(param["name"]+"Center","%E"%param["center"]) #(root of the polynomial
 		res.set(param["name"]+"Slope","%E"%param["slope"])
 		res.set(param["name"]+"ZeroValue","%E"%fit[-1])
-FreeCAD.ActiveDocument.recompute()
+FreeCAD.ActiveDocument.recompute() #recompute to get the calculated fits
 #calculate Drag Polar
 AIR_DENSITY=1.2
 GRAVITY_CONSTANT=9.81
