@@ -100,7 +100,6 @@ def getcoordsfromPARSEC(parameter):
 
 def define_airfoil(coords,scale):
     
-    print(coords)
     if coords.__contains__(FreeCAD.Vector(0,0,0)): # lgtm[py/modification-of-default-value]
         flippoint = coords.index(FreeCAD.Vector(0,0,0))
     else:
