@@ -16,7 +16,7 @@ import copy
 import WingSolver_dependencies.WingSolver_Dependencies as wd
 
 
-def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label="Alpha[�]",y_label="Force [N]",hLines=None):
+def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label="Alpha[°]",y_label="Force [N]",hLines=None):
     #parameter_values: list of all alpha values
     fig, ax=plt.subplots()
     x= parameter_values
@@ -49,26 +49,31 @@ def plot_function(parameter_values,y_polys,iterations,name="Lift Force",x_label=
 
     if isinstance(hLines, list):
         for h_value in hLines:
-            ax.axhline(y=h_value, color="r", linestyle="--")   
-   
+            ax.axhline(y=h_value, color="r", linestyle="--", label="Weight")   
+    ax.legend()
     # Add the colorbar
     sm = cm.ScalarMappable(cmap=cmap, norm=norm)  # Scalar mappable for the colorbar
     sm.set_array([])  # Required for ScalarMappable
     cbar = plt.colorbar(sm, ax=plt.gca())
-    cbar.set_label('Number of iteration', rotation=270)
+    cbar.set_label('Number of iterations', rotation=270, labelpad=15)
     #cbar.set_label("Iteration Number", fontsize=12)  # Label for the colorbar
-
+        # Set colorbar to show only integer ticks
+    cbar.locator = MaxNLocator(integer=True)
+    cbar.update_ticks()
     #plt.legend() #this line causes tis error: No handles with labels found to put in legend. 
     plt.tight_layout()
     return fig
 
-def plotOverIterations(y_values,name="Cost",x_label="Iterations",y_label="Cost", hLines=None):
+def plotOverIterations(y_values,name="Cost",x_label="Iteration",y_label="Cost", hLines=None):
     fig,ax = plt.subplots()
     x=range(1,len(y_values)+1)
     ax.scatter(x,y_values,color="red",label=name)
     ax.set_title(name)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
+       # Ganzzahlige Ticks auf der X-Achse
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.grid(True)
     if isinstance(hLines, list):
          for h_value in hLines:
               ax.axhline(y=h_value, color="r", linestyle="--")
@@ -81,7 +86,7 @@ g=9.81
 #You also need to add a 1st iteration
 
 #Get subfolders and sort them
-working_dir= "/home/sgrimm/Archive/20250224_results/"
+working_dir= "/home/simongr/Downloads/Archive/20250306_results"
 results_path=os.path.join(working_dir,"results")
 #Create evaluation directories:
 # List of directories to check
@@ -106,30 +111,31 @@ for directory in directories:
 
 
 results, parameter, mass, cost, diff, iterations = wd.extract_data(results_path)
+date="Problem 2"
 
-figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations,name="LiftForce " +date, hLines=[mass["TotalMass"][-1]*9.81])
-figDragForce=plot_function(results["alpha"],results["data"]["DragForce"],iterations,name="DragForce "+date)
-figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],iterations,name="PitchTorque "+ date)
-figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque "+date,x_label="Beta [°]", y_label="Torque [Nm]")
-figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque "+date,x_label="Beta [°]", y_label="Torque [Nm]")
+figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations,name="Lift force " +date, hLines=[mass["TotalMass"][-1]*9.81])
+figDragForce=plot_function(results["alpha"],results["data"]["DragForce"],iterations,name="Drag force "+date)
+figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],iterations,name="Pitch moment "+ date, y_label="Moment [Nm]")
+figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="Yaw moment "+date,x_label="Beta [°]", y_label="Moment [Nm]")
+figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="Roll moment "+date,x_label="Beta [°]", y_label="Moment [Nm]")
 figCosts=plotOverIterations(results["data"]["TotalCost"], name="TotalCost "+date)
-figCosts.savefig(os.path.join(working_dir,"evaluation/TotalCost.png"))
+figCosts.savefig(os.path.join(working_dir,"evaluation/TotalCost.svg"))
 plots={"figLiftForce":figLiftForce,"figDragForce":figDragForce,"figPitchTorque":figPitchTorque,"figYawTorque":figYawTorque,"figRollTorque":figRollTorque}
 #save plots
 for key in plots:
-     plots[key].savefig(os.path.join(working_dir, f"evaluation/{key}.png"))
+     plots[key].savefig(os.path.join(working_dir, f"evaluation/{key}.svg"))
 plt.close("all")
 parameterPlots={}
 for parameterName in parameter:
     parameterPlots[parameterName]=plotOverIterations(parameter[parameterName],name=parameterName+" "+date,y_label=parameterName)
-    parameterPlots[parameterName].savefig(os.path.join(working_dir,f"evaluation/parameter/{parameterName}.png"))
+    parameterPlots[parameterName].savefig(os.path.join(working_dir,f"evaluation/parameter/{parameterName}.svg"))
     #Die Einheiten sind noch nicht im plot
 for costterm in cost:
      plot=plotOverIterations(cost[costterm], name=costterm + " "+date, y_label=costterm)
-     plot.savefig(os.path.join(working_dir,f"evaluation/cost/cost_{costterm}.png"))
+     plot.savefig(os.path.join(working_dir,f"evaluation/cost/cost_{costterm}.svg"))
 for costterm in cost:
      plot=plotOverIterations(diff[costterm], name=f"diff {costterm} {date}", y_label="difference to goal")
-     plot.savefig(os.path.join(working_dir,f"evaluation/cost/diff_{costterm}.png"))
+     plot.savefig(os.path.join(working_dir,f"evaluation/cost/diff_{costterm}.svg"))
 plt.close("all")
 
 #print information on program:
