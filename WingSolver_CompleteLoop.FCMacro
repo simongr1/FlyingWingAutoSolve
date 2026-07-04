@@ -13,7 +13,6 @@ import shutil
 import time
 from datetime import timedelta
 import traceback
-import WingSolver_dependencies.emailForError as emailForError
 
 
 
@@ -61,6 +60,5 @@ try:
     print("Finished complete loop")
 
 except Exception as e:
-    error_message = traceback.format_exc()
-    emailForError.send_email("Error",error_message)
+    traceback.print_exc()
 
