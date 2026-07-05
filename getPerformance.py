@@ -6,7 +6,7 @@ import scipy as sp
 import WingSolver_dependencies.WingSolver_Dependencies as wp
 
 # WIP ---------------------------------
-dir="/home/simongr/Desktop/relevant data/FinalOptimization/20250308_results/results"
+dir="path/to/results"   # <-- edit to your results directory
 results, parameter, mass, cost, diff, iterations=wp.extract_data(dir)
 n=0
 #pitch stability
