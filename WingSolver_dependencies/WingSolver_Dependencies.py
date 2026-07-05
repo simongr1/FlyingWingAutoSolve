@@ -235,7 +235,7 @@ def cL_cD_bestendurance(dragPoly):
     cD_bestendurance=a*cL_bestendurance**2+b*cL_bestendurance+d
     return  cL_bestendurance, cD_bestendurance
 def get_gradients(path):
-    #path="/home/sgrimm/Archive/20250204_results/sstate.csv"
+    #path="path/to/results/sstate.csv"
     path_sstate=os.path.join(path,"sstate.csv")
     df= pd.read_csv(path_sstate,header=None, usecols=[2])
     magnitudes = []

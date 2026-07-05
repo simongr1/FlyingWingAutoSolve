@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Macro Begin: /home/eprice/.local/share/FreeCAD/Macro/WingSolver_AnalyseResult.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
 import FreeCAD
 
 

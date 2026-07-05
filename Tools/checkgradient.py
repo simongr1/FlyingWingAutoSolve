@@ -4,7 +4,7 @@ import copy
 import os
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors
-working_dir= "/home/sgrimm/Archive/20250205_results/results"
+working_dir= "path/to/results"   # <-- edit to your results directory
 #which two components do you want to compare?
 #'Lift', 'Endurance', 'StaticMargin', 'Trim'
 comp1="Lift"

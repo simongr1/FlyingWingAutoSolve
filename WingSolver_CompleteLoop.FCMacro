@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Macro Begin: /home/eprice/.local/share/FreeCAD/Macro/WingSolver_OuterLoop.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
 import FreeCAD
 import FreeCADGui
 
