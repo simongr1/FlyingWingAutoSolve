@@ -220,7 +220,7 @@ python WingSolver_EvaluateResults.py
 - `WingSolver_*.FCMacro` — the optimizer macros (entry point: `WingSolver_CompleteLoop`).
 - `WingSolver_dependencies/` — helper package: `costfunction.py` (4 penalty terms), `WingSolver_Dependencies.py` (CSV/data + velocity-file helpers), `Macro_Dependencies.py`.
 - `fpo/airfoil/` — FreeCAD `FeaturePython` airfoil objects: Bernstein-polynomial (`airfoil`) and SPARSEC (`parsec`) parametrizations.
-- `FlyingWingAutoSolve_newParamater.FCStd` — the active parametric model. Other `.FCStd` files are historical/experimental variants.
+- `FlyingWingAutoSolve_newParamater.FCStd` — the parametric model the optimizer runs against.
 - `pvScript.py` + `CSVonly.pvsm` — ParaView batch script + saved state that extract forces to `mycsv.csv`.
 - `U`, `U_template`, `inlet.dat` — OpenFOAM velocity boundary condition (regenerated from the template as velocity changes).
 - `workingdir/`, `results/` — generated at runtime (git-ignored).
