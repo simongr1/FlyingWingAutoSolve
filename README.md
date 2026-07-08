@@ -12,14 +12,14 @@ The optimizer drives 13 design variables (7 geometric, 5 SPARSEC airfoil, 1 velo
 
 | Component | Version used | Purpose |
 |---|---|---|
-| **FreeCAD** | **1.1** (conda, py311) | Parametric CAD host + macro runner |
-| **CfdOF** workbench | 1.37.3 | Bridges FreeCAD ↔ OpenFOAM (meshing + case writing) |
-| **Curved Shapes** workbench | 1.0.15 | Lofts the 3D wing from the airfoil sections |
+| **FreeCAD** | **1.0.x** (conda, py311) | Parametric CAD host + macro runner |
+| **CfdOF** workbench | **1.29.4** — git `ae13615` (Dec 2024) | Bridges FreeCAD ↔ OpenFOAM (meshing + case writing) |
+| **Curved Shapes** workbench | **1.00.13** — git `bf49ebf` (Nov 2024) | Lofts the 3D wing from the airfoil sections |
 | **OpenFOAM** | OpenCFD **v2412** | RANS solver (`simpleFoam`, k-ω SST) |
 | **ParaView** (`pvbatch`) | 5.11.2 + `python3-paraview` | Extracts forces/moments to CSV; must load `CSVonly.pvsm` |
 | **Python 3** + numpy, scipy, pandas, matplotlib | any recent | Standalone result-evaluation scripts only |
 
-> **FreeCAD ≥ 1.0.0 final is required** — CfdOF 1.37.3 rejects 1.0.0 RC builds ("must be at least 1.0.0 (29177)"). The model document was authored in 1.1, so **1.1 is the recommended version** (no downgrade warnings).
+> **Pin FreeCAD to 1.0.x and the two geometry addons to the commits above** — see §2.2. FreeCAD **1.1** tightened link-scope enforcement and changed the Curved Shapes / boolean behavior, which breaks the wing-body `Part::MultiFuse` (empty or multi-solid results) even though the geometry itself is sound. The older **CfdOF 1.29.4** also drops the strict build-number check that 1.37.3 applies (1.37.3 rejects 1.0.0 RC builds with *"must be at least 1.0.0 (29177)"*), so with the pinned CfdOF any **1.0.x AppImage — including an RC — works**. The document was later re-saved by a 1.1 dev build; opening it in 1.0.x is a mild downgrade but is the robust combination for regenerating geometry across the parameter space.
 
 On Linux, OpenFOAM and ParaView are installed **natively via apt** (§2.3); **cfMesh is installed through CfdOF's own dependency installer** (the "Install cfMesh" button), because CfdOF needs its *patched* build — the generated `Allmesh` script calls it, not the `cartesianMesh` bundled with OpenFOAM.
 
@@ -29,19 +29,42 @@ On Linux, OpenFOAM and ParaView are installed **natively via apt** (§2.3); **cf
 
 ### 2.1 FreeCAD
 
-Download a **1.1 (or 1.0.x final)** conda py311 AppImage from the [FreeCAD releases](https://github.com/FreeCAD/FreeCAD/releases). Do **not** use a 1.0 RC — CfdOF rejects it.
+Download a **1.0.x** conda py311 AppImage from the [FreeCAD releases](https://github.com/FreeCAD/FreeCAD/releases) (a 1.0.0 RC is fine once the addons are pinned per §2.2). Avoid **1.1** — its stricter link-scope enforcement breaks the wing-body boolean fusion (see §1 and §7).
 
 ```bash
 chmod +x FreeCAD_<version>-conda-Linux-x86_64-py311.AppImage
 ./FreeCAD_<version>-conda-Linux-x86_64-py311.AppImage
 ```
 
-### 2.2 FreeCAD workbenches (addons)
+### 2.2 FreeCAD workbenches (addons) — install, then pin
 
 In FreeCAD: **Tools → Addon Manager**, then install and restart:
 
 - **CfdOF** — the CFD pipeline (mesh + case writing + solver control).
 - **Curved Shapes** — lofts the 3D wing from the airfoil sections; the document's `CurvedArray`/`CurvedSegment` objects need it.
+
+**Then pin both to the validated commits (important).** The Addon Manager installs the latest versions; newer Curved Shapes + FreeCAD 1.1 produce a *degenerate wing-body fusion* (the central `Part::MultiFuse` comes out empty or as multiple un-welded solids for many design vectors). The commits below are the last known-robust versions and match the environment the model was authored/validated in. Both addons are plain git checkouts under FreeCAD's Mod directory, so pin them with `git checkout`:
+
+```bash
+# FreeCAD 1.0.x uses ~/.local/share/FreeCAD/Mod  (1.1 uses a separate v1-1/Mod)
+MOD="$HOME/.local/share/FreeCAD/Mod"
+
+# Curved Shapes 1.00.13  (chbergmann/CurvedShapesWorkbench)
+git -C "$MOD/CurvedShapes" checkout bf49ebf
+
+# CfdOF 1.29.4  (jaheyns/CfdOF)  -- also drops the strict FreeCAD-build check,
+# so it accepts a 1.0.0 RC AppImage
+git -C "$MOD/CfdOF" checkout ae13615
+```
+
+Verify, and restart FreeCAD:
+
+```bash
+git -C "$MOD/CurvedShapes" describe --tags --always   # -> bf49ebf
+git -C "$MOD/CfdOF"        describe --tags --always   # -> v0-806-gae13615
+```
+
+> To return to the latest versions later: `git -C "$MOD/<addon>" checkout master`.
 
 
 ### 2.3 CFD dependencies (native, Linux)
@@ -151,6 +174,22 @@ Two more spreadsheets control *what* is optimized and *when it stops*. These are
 
 > ! Objects are referenced **by label**, not internal name — renaming an object in the model tree will break the macros.
 
+### 3.2 Parallel cores (match your machine)
+
+**The document is configured for a 40-core machine.** On a smaller machine you *must* lower the core count, or OpenFOAM tries to launch more MPI ranks than you have cores and the solves fail. Adjust it in **two** places:
+
+1. **FreeCAD — `CfdSolver` "Parallel Cores".** In the model tree expand **`CfdAnalysis` → `CfdSolver`** and set the **`Parallel Cores`** property to **at most your physical CPU core count** (e.g. the output of `nproc`). It ships at **40**. This controls how many ranks each OpenFOAM solve uses (`decomposePar`).
+
+2. **OpenMPI host slots — `/etc/openmpi/openmpi-default-hostfile`.** OpenMPI caps ranks per host via this file. Set the local slot count to your core count:
+
+   ```
+   localhost slots=24
+   ```
+
+   With `slots=24`, OpenFOAM will not use more than 24 ranks on this machine regardless of other settings (adjust `24` to your core count).
+
+> The optimizer also launches **all** mesh/solve jobs for an iteration **at once** (`xargs -P0`, see §4), so the real load is roughly *(number of concurrent cases) × (Parallel Cores)*. Keep `Parallel Cores` modest so the simultaneous cases don't oversubscribe the CPU.
+
 ---
 
 ## 4. Running a simulation
@@ -229,6 +268,7 @@ python WingSolver_EvaluateResults.py
 
 ## 7. Known reproducibility caveats
 
+- **The wing-body fusion is boolean-fragile — pin the geometry toolchain (§2.2).** On FreeCAD **1.1** (stricter link-scope enforcement) and/or newer **Curved Shapes**, the central `Part::MultiFuse` that welds the body can return an *empty* shape or *multiple un-welded solids* for many design vectors — even though the individual parts are valid — because components meet with near-coincident/tangent faces. Symptoms in the Report view: `Bnd_Box is void`, `... go out of the allowed scope ... reside within 'N/A'`, and a fused body with >1 solid. Use the pinned FreeCAD 1.0.x + addon commits. `Tools/verify_random_configs.py` samples the parameter space and flags configs whose geometry fails to rebuild; `Tools/find_broken_geometry.py` locates the offending sketch/edge.
 - **ParaView `.pvsm` coupling is version-sensitive.** `pvScript.py` loads `CSVonly.pvsm` by relative path; a ParaView version that can't load the saved state will fail to produce `mycsv.csv`. Pin the ParaView version.
 - **Hard-coded paths** remain in the evaluation scripts (result directories) — edit for your machine before running them.
 - Macro header comments still reference the original author's paths; the real paths come from `BaseDir` and `__file__`.
