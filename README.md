@@ -29,7 +29,7 @@ On Linux, OpenFOAM and ParaView are installed **natively via apt** (§2.3); **cf
 
 ### 2.1 FreeCAD
 
-Download a **1.0.x** conda py311 AppImage from the [FreeCAD releases](https://github.com/FreeCAD/FreeCAD/releases) (a 1.0.0 RC is fine once the addons are pinned per §2.2). Avoid **1.1** — its stricter link-scope enforcement breaks the wing-body boolean fusion (see §1 and §7).
+Download a **1.0.x** conda py311 AppImage from the [FreeCAD releases](https://github.com/FreeCAD/FreeCAD/releases) (a 1.0.0 RC is fine once the addons are pinned per §2.2). Avoid **1.1** — its stricter link-scope enforcement breaks the wing-body boolean fusion (see §1 and §7). We used 1.0.0 RC4.
 
 ```bash
 chmod +x FreeCAD_<version>-conda-Linux-x86_64-py311.AppImage
