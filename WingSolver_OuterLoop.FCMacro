@@ -80,6 +80,14 @@ while keepgoing:
 				shutil.copy(srcfile,dstfile)
 			except Exception as e:
 				print("Could not copy file %s, %s"%(srcfile,str(e)))
+		#also save the whole mesh case (meshCase = workingdir/<config>/meshCase)
+		#so the mesh can be analysed later - it is otherwise overwritten each iteration
+		srcmesh=os.path.join(srcfolder,"meshCase")
+		dstmesh=os.path.join(subfolder,"meshCase")
+		try:
+			shutil.copytree(srcmesh,dstmesh,dirs_exist_ok=True)
+		except Exception as e:
+			print("Could not copy mesh case %s, %s"%(srcmesh,str(e)))
 
 	print("Plotting Result:")
 	#CfdTools.executeMacro(plotResultMacro)
