@@ -261,7 +261,7 @@ The images below show the output of a healthy, converged run — the aerodynamic
 
 ## 5. Evaluating results
 
-The standalone scripts turn a `results/` directory into plots and summary numbers. **Edit the hard-coded `working_dir` / `dir` path at the top of each before running:**
+The standalone scripts turn a `results/` directory into plots and summary numbers. **Edit the hard-coded `run_dir` path at the top of each before running:**
 
 - `WingSolver_EvaluateResults.py` — polars, cost components, and per-parameter histories → `evaluation/*.eps`.
 - `getPerformance.py` — prints static margin, power, trim, lift deficit, total cost for one iteration.

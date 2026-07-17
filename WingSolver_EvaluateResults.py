@@ -86,23 +86,20 @@ g=9.81
 
 #You also need to add a 1st iteration
 
-#Get subfolders and sort them
-working_dir= "/path/to/results"  # Replace with the actual path to your results folder
-results_path=os.path.join(working_dir,"results")
+#Directory of one optimization run. It must contain the "results" folder produced
+#by the optimizer; the "evaluation" folder with the plots is created next to it:
+#   <run_dir>/results      <- input,  copied here from the optimizer
+#   <run_dir>/evaluation   <- output, created by this script
+run_dir= "/path/to/00000001_results"  # Replace with the actual path to your run folder
+results_path=os.path.join(run_dir,"results")
 #Create evaluation directories:
 # List of directories to check
 directories = ["evaluation/cost", "evaluation/parameter"]
 
-# Extract the date using a regular expression
-match = re.search(r"\d{8}", working_dir)
-if match:
-    date = match.group()
-else:
-    print("No date found")
 
 for directory in directories:
     # Check if the directory exists
-    joined_directory = os.path.join(working_dir,directory)
+    joined_directory = os.path.join(run_dir,directory)
     if not os.path.exists(joined_directory):
         # Create the directory if it doesn't exist
         print(joined_directory)
@@ -116,26 +113,26 @@ results, parameter, mass, cost, diff, iterations = wd.extract_data(results_path)
 figLiftForce=plot_function(results["alpha"],results["data"]["LiftForce"],iterations,name="Lift Force Polar", hLines=[mass["TotalMass"][-1]*9.81])
 figDragForce=plot_function(results["alpha"],results["data"]["DragForce"],iterations,name="Drag force polar ")
 figPitchTorque=plot_function(results["alpha"],results["data"]["PitchTorque"],iterations,name="Pitch torque polar")
-figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque "+date,x_label="Beta [°]", y_label="Torque [Nm]")
-figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque "+date,x_label="Beta [°]", y_label="Torque [Nm]")
+figYawTorque=plot_function(results["beta"],results["data"]["YawTorque"],iterations,name="YawTorque ",x_label="Beta [°]", y_label="Torque [Nm]")
+figRollTorque=plot_function(results["beta"],results["data"]["RollTorque"],iterations,name="RollTorque ",x_label="Beta [°]", y_label="Torque [Nm]")
 figCosts=plotOverIterations(results["data"]["TotalCost"], name="Objective function value over iterations")
-figCosts.savefig(os.path.join(working_dir,"evaluation/TotalCost.eps"))
+figCosts.savefig(os.path.join(run_dir,"evaluation/TotalCost.eps"))
 plots={"figLiftForce":figLiftForce,"figDragForce":figDragForce,"figPitchTorque":figPitchTorque,"figYawTorque":figYawTorque,"figRollTorque":figRollTorque}
 #save plots
 for key in plots:
-     plots[key].savefig(os.path.join(working_dir, f"evaluation/{key}.eps"))
+     plots[key].savefig(os.path.join(run_dir, f"evaluation/{key}.eps"))
 plt.close("all")
 parameterPlots={}
 for parameterName in parameter:
-    parameterPlots[parameterName]=plotOverIterations(parameter[parameterName],name=parameterName+" "+date,y_label=parameterName)
-    parameterPlots[parameterName].savefig(os.path.join(working_dir,f"evaluation/parameter/{parameterName}.eps"))
+    parameterPlots[parameterName]=plotOverIterations(parameter[parameterName],name=parameterName,y_label=parameterName)
+    parameterPlots[parameterName].savefig(os.path.join(run_dir,f"evaluation/parameter/{parameterName}.eps"))
     #Die Einheiten sind noch nicht im plot
 for costterm in cost:
-     plot=plotOverIterations(cost[costterm], name=costterm + " "+date, y_label=costterm)
-     plot.savefig(os.path.join(working_dir,f"evaluation/cost/cost_{costterm}.eps"))
+     plot=plotOverIterations(cost[costterm], name=costterm , y_label=costterm)
+     plot.savefig(os.path.join(run_dir,f"evaluation/cost/cost_{costterm}.eps"))
 for costterm in cost:
-     plot=plotOverIterations(diff[costterm], name=f"diff {costterm} {date}", y_label="difference to goal")
-     plot.savefig(os.path.join(working_dir,f"evaluation/cost/diff_{costterm}.eps"))
+     plot=plotOverIterations(diff[costterm], name=f"diff {costterm}", y_label="difference to goal")
+     plot.savefig(os.path.join(run_dir,f"evaluation/cost/diff_{costterm}.eps"))
 
 fig_all_costs, ax_all_costs = plt.subplots()
 for costterm in cost:
@@ -148,12 +145,12 @@ ax_all_costs.tick_params(axis='both', labelsize=LABEL_FONTSIZE * 0.7)
 ax_all_costs.legend()
 ax_all_costs.grid(True)
 fig_all_costs.tight_layout()
-fig_all_costs.savefig(os.path.join(working_dir, "evaluation/cost/all_costterms.eps"))
+fig_all_costs.savefig(os.path.join(run_dir, "evaluation/cost/all_costterms.eps"))
 
 plt.close("all")
 
 #print information on program:
-print(f"Read from: {working_dir}")
+print(f"Read from: {run_dir}")
 print(f"Used parameter: {parameter.keys()}")
 print(f"CostTerms: {cost.keys()}")
 finalcost= results["data"]["TotalCost"][-1]
