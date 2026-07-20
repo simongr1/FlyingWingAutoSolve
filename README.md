@@ -266,6 +266,15 @@ The standalone scripts turn a `results/` directory into plots and summary number
 - `WingSolver_EvaluateResults.py` — polars, cost components, and per-parameter histories → `evaluation/*.eps`.
 - `getPerformance.py` — prints static margin, power, trim, lift deficit, total cost for one iteration.
 - `Tools/checkgradient.py`, `Tools/checkpolar.py`, `Tools/plotEachIteration.py` — diagnostics.
+- `Tools/analyse_meshes.py` — runs OpenFOAM `checkMesh` over every saved mesh case and collects mesh-quality characteristics into one CSV (the mesh-independence study behind the paper's mesh table).
+- `Tools/extract_residuals.py` — extracts the averaged final CFD residual per angle-of-attack/sideslip sweep segment (the case is a fixed-step sweep, not a converging solve, so this reports each segment's residual floor rather than a convergence history).
+- `Tools/find_broken_geometry.py` — diagnoses broken sketch geometry (zero-length edges, error-state objects) in the currently open document; run inside the FreeCAD Python console.
+- `Tools/verify_random_configs.py` — samples random design vectors, rebuilds the CAD for each, and reports which configs fail to regenerate cleanly (checks the sketch/boolean fixes in §7 hold across the whole design space).
+- `Tools/mesh_stats.py` — summarizes `Tools/analyse_meshes.py`'s output CSV (mean/std/min/max per mesh-quality metric) into the aggregate numbers for the paper's mesh table.
+- `Tools/residual_stats.py` — summarizes `Tools/extract_residuals.py`'s output, grouping the residual floors by config/phase/angle.
+- `Tools/extract_repeat_polars.py` — extracts the raw AoA-sweep polars plus fitted `dM/dα`, trim moment `M0`, and total cost from a pair of repeat CFD runs of the same starting design.
+- `Tools/repeat_run_noise_metrics.py` — quantifies run-to-run CFD noise (L/D/M deviation, `dM/dα`, `M0`) between the repeat runs extracted above.
+- `Tools/compare_noise_to_fd_step.py` — compares that noise floor against the finite-difference objective-change per step, backing the "CFD noise is below the FD signal" claim in §3.2 of the paper.
 
 Run with the venv from §2.4:
 
@@ -281,8 +290,12 @@ python WingSolver_EvaluateResults.py
 - `WingSolver_dependencies/` — helper package: `costfunction.py` (4 penalty terms), `WingSolver_Dependencies.py` (CSV/data + velocity-file helpers), `Macro_Dependencies.py`.
 - `fpo/airfoil/` — FreeCAD `FeaturePython` airfoil objects: Bernstein-polynomial (`airfoil`) and SPARSEC (`parsec`) parametrizations.
 - `FlyingWingAutoSolve_newParamater.FCStd` — the parametric model the optimizer runs against.
+- `FlyingWingAutoSolve_newParamater_optimized.FCStd` — the same model with the optimizer's final design vector already filled in, so the optimized geometry/CFD case can be inspected without rerunning the full optimization.
 - `pvScript.py` + `CSVonly.pvsm` — ParaView batch script + saved state that extract forces to `mycsv.csv`.
 - `U`, `U_template`, `inlet.dat` — OpenFOAM velocity boundary condition (regenerated from the template as velocity changes).
+- `write_table.py` — generates the fixed-step AoA/beta sweep table used for `inlet.dat`/`U`. `write_table_airspeed.py`, `write_table_quick.py`, `write_table_quick_2axis.py`, `write_table_steady.py` are earlier iterations on the sweep schedule, kept for reference but not the ones used for the paper's runs.
+- `old_scripts/` — superseded one-off scripts kept for reference, not part of the active pipeline.
+- `Tools/` — standalone diagnostics and post-processing scripts, see §5.
 - `workingdir/`, `results/` — generated at runtime (git-ignored).
 
 ---
