@@ -273,8 +273,7 @@ The standalone scripts turn a `results/` directory into plots and summary number
 - `Tools/mesh_stats.py` — summarizes `Tools/analyse_meshes.py`'s output CSV (mean/std/min/max per mesh-quality metric) into the aggregate numbers for the paper's mesh table.
 - `Tools/residual_stats.py` — summarizes `Tools/extract_residuals.py`'s output, grouping the residual floors by config/phase/angle.
 - `Tools/extract_repeat_polars.py` — extracts the raw AoA-sweep polars plus fitted `dM/dα`, trim moment `M0`, and total cost from a pair of repeat CFD runs of the same starting design.
-- `Tools/repeat_run_noise_metrics.py` — quantifies run-to-run CFD noise (L/D/M deviation, `dM/dα`, `M0`) between the repeat runs extracted above.
-- `Tools/compare_noise_to_fd_step.py` — compares that noise floor against the finite-difference objective-change per step, backing the "CFD noise is below the FD signal" claim in §3.2 of the paper.
+- `Tools/compare_noise_to_fd_step.py` — compares the run-to-run CFD noise floor (from the repeat runs extracted above) against the finite-difference objective-change per step, backing the "CFD noise is below the FD signal" claim in §3.2 of the paper.
 
 Run with the venv from §2.4:
 
